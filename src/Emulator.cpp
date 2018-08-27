@@ -25,16 +25,35 @@
 
 // Picking up where windows falls short
 
+// Dont scream, windows
 #define SOCKADDR_IN sockaddr_in
+
+// In linux, sockets are referred to using descriptors.
 #define SOCKET int
+
+// *Sighs*
 #define SOCKADDR sockaddr
+
+// Some wonky data types that doesn't exist on linux
 #define WSADATA char*
 #define _TCHAR char
+
+// Socket startup and cleanup functions
+// Why, you ask? Do I look like I know?
 #define WSAStartup(t, y) 0
 #define WSACleanup() do {} while(0)
+
+// Because word?
 #define MAKEWORD
+
+// Oy vey windows.
 #define closesocket(sock) close(sock)
+
+// Seriously? A seperate function, just to pass the address and feel smug
+// about not assigning it? Nice save. thx.
 #define fopen_s(_ptr, path, mode) do { *_ptr = fopen(path, mode); } while(0)
+
+// Doesn't exist on linux
 #define SOCKET_ERROR -1
 
 SOCKADDR_IN server_addr;
