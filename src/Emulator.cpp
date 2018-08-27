@@ -748,3 +748,7 @@ int _tmain(int argc, _TCHAR *argv[]) {
 
   return 0;
 }
+
+int main(int argc, char* argv[]) {
+    return _tmain(argc, argv);
+}
