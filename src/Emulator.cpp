@@ -1,5 +1,11 @@
 
 #include <stdio.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #pragma comment(lib, "wsock32.lib")
 
@@ -16,6 +22,20 @@
 
 #define MAX_FILENAME_SIZE 500
 #define MAX_BUFFER_SIZE 500
+
+// Picking up where windows falls short
+
+#define SOCKADDR_IN sockaddr_in
+#define SOCKET int
+#define SOCKADDR sockaddr
+#define WSADATA char*
+#define _TCHAR char
+#define WSAStartup(t, y) 0
+#define WSACleanup() do {} while(0)
+#define MAKEWORD
+#define closesocket(sock) close(sock)
+#define fopen_s(_ptr, path, mode) do { *_ptr = fopen(path, mode); } while(0)
+#define SOCKET_ERROR -1
 
 SOCKADDR_IN server_addr;
 SOCKADDR_IN client_addr;
@@ -540,7 +560,8 @@ void building(int args, _TCHAR **argv) {
 void test_and_mark() {
   char buffer[1024];
   bool testing_complete;
-  int len = sizeof(SOCKADDR);
+  // TODO: Remove cast
+  socklen_t len = (socklen_t)sizeof(SOCKADDR);
   char chr;
   int i;
   int j;
