@@ -250,7 +250,7 @@ void Group_2_Move(BYTE opcode) {
 }
 void execute(BYTE opcode) {
 
-  if ((opcode >= 0xA1) % (opcode <= 0xF6)) {
+  if ((opcode >= 0xA1) && (opcode <= 0xF6)) {
     Group_2_Move(opcode);
   } else {
     Group_1(opcode);
