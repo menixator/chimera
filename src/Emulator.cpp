@@ -227,6 +227,21 @@ char opcode_mneumonics[][14] = {
 #define LDAB_PAG 0x82
 #define LDAB_BAS 0x92
 
+// STORA (Stores Accumulator A into a Memory Address)
+// Immediate Addressing is absent.
+#define STORA_ABS 0x1C
+#define STORA_ZPG 0x2C
+#define STORA_IND 0x3C
+#define STORA_PAG 0x4C
+#define STORA_BAS 0x5C
+
+// STORB (Stores Accumulator B into a Memory Address)
+// Immediate Addressing is absent.
+#define STORB_ABS 0x1D
+#define STORB_ZPG 0x2D
+#define STORB_IND 0x3D
+#define STORB_PAG 0x4D
+#define STORB_BAS 0x5D
 
 // Helper macro to determine the destination accumulator.
 // If the last nibble is 0x1, it's LDAA, if the last nibble is
@@ -234,7 +249,10 @@ char opcode_mneumonics[][14] = {
 #define LDA_DEST(opcode)                                                       \
   ((opcode & 0x1) == 0x1 ? REGISTER_A : opcode & 0x2 ? REGISTER_B : -1)
 
-#define BUILD_ADDRESS_IMM(high, low, addr)                                     \
+#define STOR_DEST(opcode)                                                      \
+  ((opcode & 0xC) == 0xC ? REGISTER_A : opcode & 0xD ? REGISTER_B : -1)
+
+#define BUILD_ADDRESS_ABS(high, low, addr)                                     \
   do {                                                                         \
     low = fetch();                                                             \
     high = fetch();                                                            \
@@ -242,7 +260,7 @@ char opcode_mneumonics[][14] = {
   } while (0)
 #define BUILD_ADDRESS_IND(high, low, addr)                                     \
   do {                                                                         \
-    BUILD_ADDRESS_IMM(high, low, addr);                                        \
+    BUILD_ADDRESS_ABS(high, low, addr);                                        \
     low = Memory[address];                                                     \
     high = Memory[address + 1];                                                \
   } while (0)
@@ -313,7 +331,7 @@ void Group_1(BYTE opcode) {
   // LDAA(Load Accumulator B) abs
   case LDAA_ABS:
   case LDAB_ABS:
-    BUILD_ADDRESS_IMM(HB, LB, address);
+    BUILD_ADDRESS_ABS(HB, LB, address);
     if (IS_ADDRESSABLE(address)) {
       Registers[LDA_DEST(opcode)] = Memory[address];
     }
@@ -349,6 +367,46 @@ void Group_1(BYTE opcode) {
     BUILD_ADDRESS_BAS(HB, LB, address);
     if (IS_ADDRESSABLE(address)) {
       Registers[LDA_DEST(opcode)] = Memory[address];
+    }
+    break;
+
+  case STORA_ABS:
+  case STORB_ABS:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Memory[address] = Registers[STOR_DEST(opcode)];
+    }
+    break;
+
+  case STORA_ZPG:
+  case STORB_ZPG:
+    BUILD_ADDRESS_ZPG(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Memory[address] = Registers[STOR_DEST(opcode)];
+    }
+    break;
+
+  case STORA_IND:
+  case STORB_IND:
+    BUILD_ADDRESS_IND(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Memory[address] = Registers[STOR_DEST(opcode)];
+    }
+    break;
+
+  case STORA_PAG:
+  case STORB_PAG:
+    BUILD_ADDRESS_PAG(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Memory[address] = Registers[STOR_DEST(opcode)];
+    }
+    break;
+
+  case STORA_BAS:
+  case STORB_BAS:
+    BUILD_ADDRESS_BAS(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Memory[address] = Registers[STOR_DEST(opcode)];
     }
     break;
   }
