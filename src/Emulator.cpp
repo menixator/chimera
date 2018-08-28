@@ -1,11 +1,11 @@
 
-#include <stdio.h>
 #include <arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 #pragma comment(lib, "wsock32.lib")
 
@@ -35,13 +35,15 @@
 #define SOCKADDR sockaddr
 
 // Some wonky data types that doesn't exist on linux
-#define WSADATA char*
+#define WSADATA char *
 #define _TCHAR char
 
 // Socket startup and cleanup functions
 // Why, you ask? Do I look like I know?
 #define WSAStartup(t, y) 0
-#define WSACleanup() do {} while(0)
+#define WSACleanup()                                                           \
+  do {                                                                         \
+  } while (0)
 
 // Because word?
 #define MAKEWORD
@@ -51,7 +53,10 @@
 
 // Seriously? A seperate function, just to pass the address and feel smug
 // about not assigning it? Nice save. thx.
-#define fopen_s(_ptr, path, mode) do { *_ptr = fopen(path, mode); } while(0)
+#define fopen_s(_ptr, path, mode)                                              \
+  do {                                                                         \
+    *_ptr = fopen(path, mode);                                                 \
+  } while (0)
 
 // Doesn't exist on linux
 #define SOCKET_ERROR -1
@@ -205,6 +210,63 @@ char opcode_mneumonics[][14] = {
     "CPIA  #      ", "CPIB  #      ", "ANIA  #      ", "ANIB  #      ",
 
 };
+// OPCodes
+// LDAA (Loads data into Accumulator A)
+#define LDAA_IMM 0x41
+#define LDAA_ABS 0x51
+#define LDAA_ZPG 0x61
+#define LDAA_IND 0x71
+#define LDAA_PAG 0x81
+#define LDAA_BAS 0x91
+
+// LDAB (Loads data into Accumulator B)
+#define LDAB_IMM 0x42
+#define LDAB_ABS 0x52
+#define LDAB_ZPG 0x62
+#define LDAB_IND 0x72
+#define LDAB_PAG 0x82
+#define LDAB_BAS 0x92
+
+
+// Helper macro to determine the destination accumulator.
+// If the last nibble is 0x1, it's LDAA, if the last nibble is
+// 0x2, it's LDAB
+#define LDA_DEST(opcode)                                                       \
+  ((opcode & 0x1) == 0x1 ? REGISTER_A : opcode & 0x2 ? REGISTER_B : -1)
+
+#define BUILD_ADDRESS_IMM(high, low, addr)                                     \
+  do {                                                                         \
+    low = fetch();                                                             \
+    high = fetch();                                                            \
+    address += (WORD)((WORD)HB << 8) + LB;                                     \
+  } while (0)
+#define BUILD_ADDRESS_IND(high, low, addr)                                     \
+  do {                                                                         \
+    BUILD_ADDRESS_IMM(high, low, addr);                                        \
+    low = Memory[address];                                                     \
+    high = Memory[address + 1];                                                \
+  } while (0)
+#define BUILD_ADDRESS_PAG(high, low, addr)                                     \
+  do {                                                                         \
+    high = PageRegister;                                                       \
+    low = fetch();                                                             \
+    addr += (WORD)((WORD)high << 8) + low;                                     \
+  } while (0)
+#define BUILD_ADDRESS_ZPG(high, low, addr)                                     \
+  do {                                                                         \
+    addr += 0x0000 | (WORD)fetch();                                            \
+  } while (0)
+#define BUILD_ADDRESS_BAS(high, low, addr)                                     \
+  do {                                                                         \
+    low = fetch();                                                             \
+    if ((low & 0x80) == 0x80) {                                                \
+      address += BaseRegister + (0x00 - low);                                  \
+    } else {                                                                   \
+      address += BaseRegister + low;                                           \
+    }                                                                          \
+  } while (0)
+
+#define IS_ADDRESSABLE(addr) addr >= 0 && addr < MEMORY_SIZE
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -239,8 +301,55 @@ void Group_1(BYTE opcode) {
   WORD address = 0;
   WORD data = 0;
   switch (opcode) {
-  case 0x41: // LDAA Immidiate
+  // LDAA(Load Accumulator A) #
+  // LDAA(Load Accumulator B) #
+  case LDAA_IMM:
+  case LDAB_IMM:
+    data = fetch();
+    Registers[LDA_DEST(opcode)] = data;
+    break;
 
+  // LDAA(Load Accumulator A) abs
+  // LDAA(Load Accumulator B) abs
+  case LDAA_ABS:
+  case LDAB_ABS:
+    BUILD_ADDRESS_IMM(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Registers[LDA_DEST(opcode)] = Memory[address];
+    }
+    break;
+
+  case LDAA_ZPG:
+  case LDAB_ZPG:
+    BUILD_ADDRESS_ZPG(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Registers[LDA_DEST(opcode)] = Memory[address];
+    }
+    break;
+
+  case LDAA_IND:
+  case LDAB_IND:
+    BUILD_ADDRESS_IND(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Registers[LDA_DEST(opcode)] = Memory[address];
+    }
+    break;
+
+  case LDAA_PAG:
+  case LDAB_PAG:
+    BUILD_ADDRESS_PAG(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Registers[LDA_DEST(opcode)] = Memory[address];
+    }
+    break;
+
+  case LDAA_BAS:
+  case LDAB_BAS:
+
+    BUILD_ADDRESS_BAS(HB, LB, address);
+    if (IS_ADDRESSABLE(address)) {
+      Registers[LDA_DEST(opcode)] = Memory[address];
+    }
     break;
   }
 }
@@ -768,6 +877,4 @@ int _tmain(int argc, _TCHAR *argv[]) {
   return 0;
 }
 
-int main(int argc, char* argv[]) {
-    return _tmain(argc, argv);
-}
+int main(int argc, char *argv[]) { return _tmain(argc, argv); }
