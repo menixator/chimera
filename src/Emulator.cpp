@@ -420,43 +420,22 @@ void Group_2_Move(BYTE opcode) {
   BYTE HN = opcode >> 4;
   BYTE LN = opcode & 0xf;
 
-  // Source register can be determined from the
-  // Higher nibble.
-  // 0xA - Register A
-  // 0xB - Register B
-  // and so on.
-  // However, the registers are defined in a weird
-  // order for no particular reason in the provided
-  // code. So to map them to the register indexes,
-  // we have to do some black magic.
-  // The orders are defined like this:
-  // A and B are index 5 and 4, respectively.
-  // C,D,E,F are index 0, 1, 2, 3 for some reason ..
-  // Therefore, to find the source register, we check
-  // If the higher nibble is A or B, and subtract that
-  // value from 5. A will map to 5 and B will map to 4.
-  // If the higher nibble is not 0xA or 0xB, then, we
-  // will subtract 0xC from it.
-  // 0xC-0xC will yield 0, which is the index of Register C
-  // 0xD-0xC will yield 1, which is the index of register D
-  // and so on ...
-  BYTE source = HN <= 0xB ? 0x5 - (HN - 0xA) : HN - 0xC;
+  // Normalize HN and LN
+  HN -= 0xA;
+  LN -= 0x1;
+  // Both HN and LN will appear from the range 0-5
 
-  // The lower nibble of the opcode provides the
-  // destination register.
-  // 0x1 - Register A
-  // 0x2 - Register B
-  // As before, we will have to map 0x1, 0x2 to indexes 5,4
-  // and 0x3, 0x4, 0x5 and 0x6 to indexes 0, 1, 2, and 3.
-  // If the lower nibble is 0x1 or 0x2, we shall subtract
-  // if from 0x5, but not before subtracting one from it.
-  // 0x5-(0x1-1) will yield 5 which is the register index of A
-  // 0x5-(0x2-1) will yield 4 which is the register of B
-  // If the nibble is 0x3, 0x4, 0x5, we simply subtract 0x3
-  // from it to get the correct index.
-  BYTE dest = LN <= 0x2 ? 0x5 - (LN - 0x1) : LN - 0x3;
+  // The source and destination gets mapped as such
+  // NIBBLE REGISTER INDEX
+  //  0       A       5
+  //  1       B       4
+  //  2       C       0
+  //  3       D       1
+  //  4       E       2
+  //  5       F       3
+  BYTE source = HN < 0x2 ? 0x5 - HN : HN - 0x2;
+  BYTE dest = LN < 0x2 ? 0x5 - LN : LN - 0x2;
 
-  // TODO: Remove assertions.
   assert(dest >= 0 && dest <= 5);
   assert(source >= 0 && dest <= 5);
 
