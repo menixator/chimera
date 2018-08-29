@@ -252,6 +252,10 @@ char opcode_mneumonics[][14] = {
 #define INCA 0x21
 #define INCB 0x31
 
+#define DEC_ABS 0x12
+#define DECA 0x22
+#define DECB 0x32
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -373,6 +377,9 @@ void set_flag_n(BYTE inReg) {
 void Group_1(BYTE opcode) {
   BYTE LB = 0;
   BYTE HB = 0;
+  BYTE HN = opcode >> 4;
+  BYTE LN = opcode & 0xF;
+
   WORD address = 0;
   WORD data = 0;
 
@@ -573,31 +580,28 @@ void Group_1(BYTE opcode) {
     break;
 
   case TST_ABS:
+  case INC_ABS:
+  case DEC_ABS:
+    assert(opcode == TST_ABS || opcode == INC_ABS || opcode == DEC_ABS);
     address = fetch();
-    Memory[address] = Memory[address] - 0;
+    Memory[address] =
+        Memory[address] + (opcode == INC_ABS ? 1 : opcode == DEC_ABS ? -1 : 0);
     set_flag_n(Memory[address]);
     set_flag_z(Memory[address]);
     break;
 
   case TSTA:
   case TSTB:
-    DST = A_OR_B(TSTA, TSTB, opcode);
-    Registers[DST] = Registers[DST] - 0;
-    set_flag_n(Registers[DST]);
-    set_flag_z(Registers[DST]);
-    break;
-
-  case INC_ABS:
-    address = fetch();
-    Memory[address] = Memory[address] + 1;
-    set_flag_n(Memory[address]);
-    set_flag_z(Memory[address]);
-    break;
-
   case INCA:
   case INCB:
-    DST = A_OR_B(INCA, INCA, opcode);
-    Registers[DST] = Registers[DST] + 1;
+  case DECA:
+  case DECB:
+    assert(opcode == TSTA || opcode == TSTB || opcode == INCA ||
+           opcode == INCB || opcode == DECA || opcode == DECB);
+    DST = A_OR_B(TSTA, TSTB, opcode);
+    Registers[DST] =
+        Registers[DST] +
+        (INC_ABS & LN == INC_ABS ? 1 : DEC_ABS & LN == DEC_ABS ? -1 : 0);
     set_flag_n(Registers[DST]);
     set_flag_z(Registers[DST]);
     break;
