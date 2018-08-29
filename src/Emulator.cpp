@@ -297,6 +297,16 @@ char opcode_mneumonics[][14] = {
 
 #define IS_ADDRESSABLE(addr) addr >= 0 && addr < MEMORY_SIZE
 
+#define ALL_AL_CASES(low)                                                      \
+  case 0x60 + low:                                                             \
+  case 0x70 + low:                                                             \
+  case 0x80 + low:                                                             \
+  case 0x90 + low:                                                             \
+  case 0xA0 + low:                                                              \
+  case 0xB0 + low:                                                              \
+  case 0xC0 + low:                                                              \
+  case 0xD0 + low:
+
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
 ////////////////////////////////////////////////////////////////////////////////
