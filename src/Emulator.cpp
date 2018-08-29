@@ -630,8 +630,8 @@ void Group_2_Move(BYTE opcode) {
   //  3       D       1
   //  4       E       2
   //  5       F       3
-  BYTE dest = HN < 0x2 ? 0x5 - HN : HN - 0x2;
-  BYTE source = LN < 0x2 ? 0x5 - LN : LN - 0x2;
+  BYTE source = HN < 0x2 ? 0x5 - HN : HN - 0x2;
+  BYTE dest = LN < 0x2 ? 0x5 - LN : LN - 0x2;
 
   assert(dest >= 0 && dest <= 5);
   assert(source >= 0 && dest <= 5);
