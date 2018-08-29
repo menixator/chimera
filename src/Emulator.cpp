@@ -521,8 +521,8 @@ void Group_1(BYTE opcode) {
     SRC = AL_OP_SRC(opcode);
     DST = AL_OP_DST(opcode);
     Registers[DST] |= Registers[SRC];
-    set_flag_n((BYTE)buffer);
-    set_flag_z((BYTE)buffer);
+    set_flag_n((BYTE)Registers[DST]);
+    set_flag_z((BYTE)Registers[DST]);
 
     break;
 
@@ -530,16 +530,16 @@ void Group_1(BYTE opcode) {
     SRC = AL_OP_SRC(opcode);
     DST = AL_OP_DST(opcode);
     Registers[DST] &= Registers[SRC];
-    set_flag_n((BYTE)buffer);
-    set_flag_z((BYTE)buffer);
+    set_flag_n((BYTE)Registers[DST]);
+    set_flag_z((BYTE)Registers[DST]);
     break;
 
     ALL_AL_CASES(XOR_LN)
     SRC = AL_OP_SRC(opcode);
     DST = AL_OP_DST(opcode);
     Registers[DST] ^= Registers[SRC];
-    set_flag_n((BYTE)buffer);
-    set_flag_z((BYTE)buffer);
+    set_flag_n((BYTE)Registers[DST]);
+    set_flag_z((BYTE)Registers[DST]);
     break;
   case CPIA:
   case CPIB:
