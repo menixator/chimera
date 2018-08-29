@@ -255,6 +255,9 @@ char opcode_mneumonics[][14] = {
 #define STOR_DEST(opcode)                                                      \
   ((opcode & 0xC) == 0xC ? REGISTER_A : (opcode & 0xD) == 0xD ? REGISTER_B : -1)
 
+#define A_OR_B(a, b, opcode)                                                   \
+  opcode == a ? REGISTER_A : opcode == b ? REGISTER_B : -1;
+
 // Arithmetic and logic operation destination register calculation.
 #define AL_OP_DST(opcode)                                                      \
   (BETWEEN(opcode >> 4, 0x6, 0x9)                                              \
@@ -313,6 +316,9 @@ char opcode_mneumonics[][14] = {
 #define IOR_LN 0xA
 #define AND_LN 0xB
 #define XOR_LN 0xC
+
+#define CPIA 0xFC
+#define CPIB 0xFD
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -530,6 +536,19 @@ void Group_1(BYTE opcode) {
     SRC = AL_OP_SRC(opcode);
     DST = AL_OP_DST(opcode);
     Registers[DST] ^= Registers[SRC];
+    set_flag_n((BYTE)buffer);
+    set_flag_z((BYTE)buffer);
+    break;
+  case CPIA:
+  case CPIB:
+    address = fetch();
+    DST = A_OR_B(CPIA, CPIB, opcode);
+    buffer = (WORD)Registers[DST] - (WORD)Memory[address];
+    if (buffer >= 0x100) {
+      Flags = Flags | FLAG_C;
+    } else {
+      Flags = Flags & (0xFF - FLAG_C);
+    }
     set_flag_n((BYTE)buffer);
     set_flag_z((BYTE)buffer);
     break;
