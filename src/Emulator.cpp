@@ -512,20 +512,9 @@ void Group_1(BYTE opcode) {
     ALL_AL_CASES(IOR_LN)
     SRC = AL_OP_SRC(opcode);
     DST = AL_OP_DST(opcode);
-    buffer = (WORD)Registers[DST] + (WORD)Registers[SRC];
-    if ((Flags & FLAG_C) != 0) {
-      buffer++;
-    }
-    if (buffer >= 0x100) {
-      Flags = Flags | FLAG_C;
-    } else {
-      Flags = Flags & (0xFF - FLAG_C);
-    }
+    Registers[DST] |= Registers[SRC];
     set_flag_n((BYTE)buffer);
     set_flag_z((BYTE)buffer);
-    Registers[DST] = (BYTE)buffer;
-
-
 
     break;
 
