@@ -543,9 +543,9 @@ void Group_1(BYTE opcode) {
     break;
   case CPIA:
   case CPIB:
-    address = fetch();
+    data = fetch();
     DST = A_OR_B(CPIA, CPIB, opcode);
-    buffer = (WORD)Registers[DST] - (WORD)Memory[address];
+    buffer = (WORD)Registers[DST] - (WORD)data;
     if (buffer >= 0x100) {
       Flags = Flags | FLAG_C;
     } else {
@@ -557,9 +557,9 @@ void Group_1(BYTE opcode) {
 
   case ANIA:
   case ANIB:
-    address = fetch();
+    data = fetch();
     DST = A_OR_B(ANIA, ANIB, opcode);
-    Registers[DST] &= Memory[address];
+    Registers[DST] &= data;
     set_flag_n(Registers[DST]);
     set_flag_z(Registers[DST]);
     break;
