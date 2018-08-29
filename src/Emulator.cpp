@@ -302,10 +302,17 @@ char opcode_mneumonics[][14] = {
   case 0x70 + low:                                                             \
   case 0x80 + low:                                                             \
   case 0x90 + low:                                                             \
-  case 0xA0 + low:                                                              \
-  case 0xB0 + low:                                                              \
-  case 0xC0 + low:                                                              \
+  case 0xA0 + low:                                                             \
+  case 0xB0 + low:                                                             \
+  case 0xC0 + low:                                                             \
   case 0xD0 + low:
+
+#define ADD_LN 0x7
+#define SUB_LN 0x8
+#define CMP_LN 0x9
+#define IOR_LN 0xA
+#define AND_LN 0xB
+#define XOR_LN 0xC
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -322,7 +329,20 @@ BYTE fetch() {
   }
   return byte;
 }
+
+// Sets ZERO flag
 void set_flag_z(BYTE inReg) {
+  BYTE reg;
+  reg = inReg;
+
+  if (reg == 0) {
+    Flags = Flags | FLAG_Z;
+  } else {
+    Flags = Flags & (0xFF - FLAG_Z);
+  }
+}
+
+void set_flag_n(BYTE inReg) {
   BYTE reg;
   reg = inReg;
 
@@ -339,6 +359,15 @@ void Group_1(BYTE opcode) {
   BYTE HB = 0;
   WORD address = 0;
   WORD data = 0;
+
+  // Register index to transfer FROM
+  int SRC = -1;
+  // Register index to transfer TO
+  int DST = -1;
+
+  // Used for addition and such.
+  WORD buffer;
+
   switch (opcode) {
   // LDAA(Load Accumulator A) #
   // LDAA(Load Accumulator B) #
@@ -429,6 +458,38 @@ void Group_1(BYTE opcode) {
     if (IS_ADDRESSABLE(address)) {
       Memory[address] = Registers[STOR_DEST(opcode)];
     }
+    break;
+    ALL_AL_CASES(ADD_LN)
+    // SRC and DST are 8 bit registers in Registers[]
+    SRC = AL_OP_SRC(opcode);
+    DST = AL_OP_DST(opcode);
+    buffer = (WORD)Registers[DST] + (WORD)Registers[SRC];
+    if ((Flags & FLAG_C) != 0) {
+      buffer++;
+    }
+    if (buffer >= 0x100) {
+      Flags = Flags | FLAG_C;
+    } else {
+      Flags = Flags & (0xFF - FLAG_C);
+    }
+    set_flag_n((BYTE)buffer);
+    set_flag_z((BYTE)buffer);
+    Registers[DST] = (BYTE)buffer;
+    break;
+
+    ALL_AL_CASES(SUB_LN)
+    break;
+
+    ALL_AL_CASES(CMP_LN)
+    break;
+
+    ALL_AL_CASES(IOR_LN)
+    break;
+
+    ALL_AL_CASES(AND_LN)
+    break;
+
+    ALL_AL_CASES(XOR_LN)
     break;
   }
 }
