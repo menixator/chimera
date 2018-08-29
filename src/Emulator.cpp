@@ -366,7 +366,7 @@ void Group_1(BYTE opcode) {
   int DST = -1;
 
   // Used for addition and such.
-  WORD buffer;
+  WORD buffer = 0;
 
   switch (opcode) {
   // LDAA(Load Accumulator A) #
