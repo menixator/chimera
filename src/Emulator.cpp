@@ -244,6 +244,8 @@ char opcode_mneumonics[][14] = {
 #define STORB_PAG 0x4D
 #define STORB_BAS 0x5D
 
+#define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
+
 // Helper macro to determine the destination accumulator.
 // If the last nibble is 0x1, it's LDAA, if the last nibble is
 // 0x2, it's LDAB
@@ -252,6 +254,14 @@ char opcode_mneumonics[][14] = {
 
 #define STOR_DEST(opcode)                                                      \
   ((opcode & 0xC) == 0xC ? REGISTER_A : (opcode & 0xD) == 0xD ? REGISTER_B : -1)
+
+// Arithmetic and logic operation destination register calculation.
+#define AL_OP_DST(opcode)                                                      \
+  (BETWEEN(opcode >> 4, 0x6, 0x9)                                              \
+       ? REGISTER_A                                                            \
+       : BETWEEN(opcode >> 4, 0xA, 0xD) ? REGISTER_B : -1)
+#define AL_OP_SRC(opcode)                                                      \
+  (BETWEEN(opcode >> 4, 0x6, 0xD) ? (opcode >> 4) - 0x6 % 4 : -1)
 
 #define BUILD_ADDRESS_ABS(high, low, addr)                                     \
   do {                                                                         \
