@@ -584,7 +584,7 @@ void Group_1(BYTE opcode) {
   case DEC_ABS:
     assert(opcode == TST_ABS || opcode == INC_ABS || opcode == DEC_ABS);
     address = fetch();
-    if (IS_ADDRESSIBLE(address)) {
+    if (IS_ADDRESSABLE(address)) {
       Memory[address] = Memory[address] +
                         (opcode == INC_ABS ? 1 : opcode == DEC_ABS ? -1 : 0);
       set_flag_n(Memory[address]);
@@ -630,8 +630,8 @@ void Group_2_Move(BYTE opcode) {
   //  3       D       1
   //  4       E       2
   //  5       F       3
-  BYTE source = HN < 0x2 ? 0x5 - HN : HN - 0x2;
-  BYTE dest = LN < 0x2 ? 0x5 - LN : LN - 0x2;
+  BYTE dest = HN < 0x2 ? 0x5 - HN : HN - 0x2;
+  BYTE source = LN < 0x2 ? 0x5 - LN : LN - 0x2;
 
   assert(dest >= 0 && dest <= 5);
   assert(source >= 0 && dest <= 5);
