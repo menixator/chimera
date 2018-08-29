@@ -519,6 +519,11 @@ void Group_1(BYTE opcode) {
     break;
 
     ALL_AL_CASES(AND_LN)
+    SRC = AL_OP_SRC(opcode);
+    DST = AL_OP_DST(opcode);
+    Registers[DST] &= Registers[SRC];
+    set_flag_n((BYTE)buffer);
+    set_flag_z((BYTE)buffer);
     break;
 
     ALL_AL_CASES(XOR_LN)
