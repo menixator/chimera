@@ -319,6 +319,8 @@ char opcode_mneumonics[][14] = {
 
 #define CPIA 0xFC
 #define CPIB 0xFD
+#define ANIA 0xFE
+#define ANIB 0xFF
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -551,6 +553,15 @@ void Group_1(BYTE opcode) {
     }
     set_flag_n((BYTE)buffer);
     set_flag_z((BYTE)buffer);
+    break;
+
+  case ANIA:
+  case ANIB:
+    address = fetch();
+    DST = A_OR_B(ANIA, ANIB, opcode);
+    Registers[DST] &= Memory[address];
+    set_flag_n(Registers[DST]);
+    set_flag_z(Registers[DST]);
     break;
   }
 }
