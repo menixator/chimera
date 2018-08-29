@@ -248,6 +248,10 @@ char opcode_mneumonics[][14] = {
 #define TSTA 0x20
 #define TSTB 0x30
 
+#define INC_ABS 0x11
+#define INCA 0x21
+#define INCB 0x31
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -579,6 +583,21 @@ void Group_1(BYTE opcode) {
   case TSTB:
     DST = A_OR_B(TSTA, TSTB, opcode);
     Registers[DST] = Registers[DST] - 0;
+    set_flag_n(Registers[DST]);
+    set_flag_z(Registers[DST]);
+    break;
+
+  case INC_ABS:
+    address = fetch();
+    Memory[address] = Memory[address] + 1;
+    set_flag_n(Memory[address]);
+    set_flag_z(Memory[address]);
+    break;
+
+  case INCA:
+  case INCB:
+    DST = A_OR_B(INCA, INCA, opcode);
+    Registers[DST] = Registers[DST] + 1;
     set_flag_n(Registers[DST]);
     set_flag_z(Registers[DST]);
     break;
