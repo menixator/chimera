@@ -1,5 +1,6 @@
 
 #include <arpa/inet.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -412,12 +413,65 @@ void Group_1(BYTE opcode) {
   }
 }
 
+// Handles MOV X,Y
+//  Where X and Y are any of the registers A-F
 void Group_2_Move(BYTE opcode) {
-  switch (opcode) {}
-}
-void execute(BYTE opcode) {
 
-  if ((opcode >= 0xA1) && (opcode <= 0xF6)) {
+  BYTE HN = opcode >> 4;
+  BYTE LN = opcode & 0xf;
+
+  // Source register can be determined from the
+  // Higher nibble.
+  // 0xA - Register A
+  // 0xB - Register B
+  // and so on.
+  // However, the registers are defined in a weird
+  // order for no particular reason in the provided
+  // code. So to map them to the register indexes,
+  // we have to do some black magic.
+  // The orders are defined like this:
+  // A and B are index 5 and 4, respectively.
+  // C,D,E,F are index 0, 1, 2, 3 for some reason ..
+  // Therefore, to find the source register, we check
+  // If the higher nibble is A or B, and subtract that
+  // value from 5. A will map to 5 and B will map to 4.
+  // If the higher nibble is not 0xA or 0xB, then, we
+  // will subtract 0xC from it.
+  // 0xC-0xC will yield 0, which is the index of Register C
+  // 0xD-0xC will yield 1, which is the index of register D
+  // and so on ...
+  BYTE source = HN <= 0xB ? 0x5 - (HN - 0xA) : HN - 0xC;
+
+  // The lower nibble of the opcode provides the
+  // destination register.
+  // 0x1 - Register A
+  // 0x2 - Register B
+  // As before, we will have to map 0x1, 0x2 to indexes 5,4
+  // and 0x3, 0x4, 0x5 and 0x6 to indexes 0, 1, 2, and 3.
+  // If the lower nibble is 0x1 or 0x2, we shall subtract
+  // if from 0x5, but not before subtracting one from it.
+  // 0x5-(0x1-1) will yield 5 which is the register index of A
+  // 0x5-(0x2-1) will yield 4 which is the register of B
+  // If the nibble is 0x3, 0x4, 0x5, we simply subtract 0x3
+  // from it to get the correct index.
+  BYTE dest = LN <= 0x2 ? 0x5 - (LN - 0x1) : LN - 0x3;
+
+  // TODO: Remove assertions.
+  assert(dest >= 0 && dest <= 5);
+  assert(source >= 0 && dest <= 5);
+
+  Registers[dest] = Registers[source];
+}
+
+void execute(BYTE opcode) {
+  // We're using bytes to store both the nibbles
+  // of the opcode
+  BYTE HN = opcode >> 4;
+  BYTE LN = opcode & 0xF;
+
+  // If the high nibble is between A-F and the low nibble
+  // is between 1-6, it's a MOV opcode
+  if (HN >= 0xA && HN <= 0xF && LN >= 0x1 && LN <= 0x6) {
     Group_2_Move(opcode);
   } else {
     Group_1(opcode);
