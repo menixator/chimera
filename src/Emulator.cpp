@@ -460,7 +460,7 @@ void Group_1(BYTE opcode) {
     }
     break;
     ALL_AL_CASES(ADD_LN)
-    // SRC and DST are 8 bit registers in Registers[]
+    // src and dst are 8 bit registers in registers[]
     SRC = AL_OP_SRC(opcode);
     DST = AL_OP_DST(opcode);
     buffer = (WORD)Registers[DST] + (WORD)Registers[SRC];
@@ -478,12 +478,55 @@ void Group_1(BYTE opcode) {
     break;
 
     ALL_AL_CASES(SUB_LN)
+
+    SRC = AL_OP_SRC(opcode);
+    DST = AL_OP_DST(opcode);
+    buffer = (WORD)Registers[DST] - (WORD)Registers[SRC];
+    if ((Flags & FLAG_C) != 0) {
+      buffer--;
+    }
+    if (buffer >= 0x100) {
+      Flags = Flags | FLAG_C;
+    } else {
+      Flags = Flags & (0xFF - FLAG_C);
+    }
+    set_flag_n((BYTE)buffer);
+    set_flag_z((BYTE)buffer);
+    Registers[DST] = (BYTE)buffer;
     break;
 
     ALL_AL_CASES(CMP_LN)
+    SRC = AL_OP_SRC(opcode);
+    DST = AL_OP_DST(opcode);
+    buffer = (WORD)Registers[DST] - (WORD)Registers[SRC];
+
+    if (buffer >= 0x100) {
+      Flags = Flags | FLAG_C;
+    } else {
+      Flags = Flags & (0xFF - FLAG_C);
+    }
+    set_flag_n((BYTE)buffer);
+    set_flag_z((BYTE)buffer);
     break;
 
     ALL_AL_CASES(IOR_LN)
+    SRC = AL_OP_SRC(opcode);
+    DST = AL_OP_DST(opcode);
+    buffer = (WORD)Registers[DST] + (WORD)Registers[SRC];
+    if ((Flags & FLAG_C) != 0) {
+      buffer++;
+    }
+    if (buffer >= 0x100) {
+      Flags = Flags | FLAG_C;
+    } else {
+      Flags = Flags & (0xFF - FLAG_C);
+    }
+    set_flag_n((BYTE)buffer);
+    set_flag_z((BYTE)buffer);
+    Registers[DST] = (BYTE)buffer;
+
+
+
     break;
 
     ALL_AL_CASES(AND_LN)
