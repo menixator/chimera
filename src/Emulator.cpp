@@ -584,10 +584,12 @@ void Group_1(BYTE opcode) {
   case DEC_ABS:
     assert(opcode == TST_ABS || opcode == INC_ABS || opcode == DEC_ABS);
     address = fetch();
-    Memory[address] =
-        Memory[address] + (opcode == INC_ABS ? 1 : opcode == DEC_ABS ? -1 : 0);
-    set_flag_n(Memory[address]);
-    set_flag_z(Memory[address]);
+    if (IS_ADDRESSIBLE(address)) {
+      Memory[address] = Memory[address] +
+                        (opcode == INC_ABS ? 1 : opcode == DEC_ABS ? -1 : 0);
+      set_flag_n(Memory[address]);
+      set_flag_z(Memory[address]);
+    }
     break;
 
   case TSTA:
