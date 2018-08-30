@@ -618,12 +618,14 @@ void Group_1(BYTE opcode) {
     break;
 
   case JR_ABS:
+    BUILD_ADDRESS_ABS(HB, LB, address);
     // We are going to push two bytes
     if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
       Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
       StackPointer--;
       Memory[StackPointer] = (BYTE)((ProgramCounter & 0xFF));
       StackPointer--;
+      ProgramCounter = address;
     }
     break;
   }
