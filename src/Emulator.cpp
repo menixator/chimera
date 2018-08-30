@@ -336,6 +336,7 @@ char opcode_mneumonics[][14] = {
 
 #define JMP_ABS 0x6D
 #define JR_ABS 0x00
+#define RTS_IMP 0x86
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -626,6 +627,17 @@ void Group_1(BYTE opcode) {
       Memory[StackPointer] = (BYTE)((ProgramCounter & 0xFF));
       StackPointer--;
       ProgramCounter = address;
+    }
+    break;
+
+  case RTS_IMP:
+    if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE-2)){
+        StackPointer++;
+        LB = Memory[StackPointer]; 
+        StackPointer++;
+        HB = Memory[StackPointer];
+        // Set the Program Counter
+        ProgramCounter = ((WORD)HB<<8) + (WORD)LB;
     }
     break;
   }
