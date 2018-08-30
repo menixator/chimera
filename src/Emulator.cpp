@@ -335,6 +335,7 @@ char opcode_mneumonics[][14] = {
 #define ANIB 0xFF
 
 #define JMP_ABS 0x6D
+#define JR_ABS 0x00
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -614,6 +615,16 @@ void Group_1(BYTE opcode) {
   case JMP_ABS:
     BUILD_ADDRESS_ABS(HB, LB, address);
     ProgramCounter = address;
+    break;
+
+  case JR_ABS:
+    // We are going to push two bytes
+    if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
+      Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
+      StackPointer--;
+      Memory[StackPointer] = (BYTE)((ProgramCounter & 0xFF));
+      StackPointer--;
+    }
     break;
   }
 }
