@@ -334,6 +334,8 @@ char opcode_mneumonics[][14] = {
 #define ANIA 0xFE
 #define ANIB 0xFF
 
+#define JMP_ABS 0x6D
+
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
 ////////////////////////////////////////////////////////////////////////////////
@@ -392,6 +394,7 @@ void Group_1(BYTE opcode) {
   WORD buffer = 0;
 
   switch (opcode) {
+
   // LDAA(Load Accumulator A) #
   // LDAA(Load Accumulator B) #
   case LDAA_IMM:
@@ -606,6 +609,11 @@ void Group_1(BYTE opcode) {
         (INC_ABS & LN == INC_ABS ? 1 : DEC_ABS & LN == DEC_ABS ? -1 : 0);
     set_flag_n(Registers[DST]);
     set_flag_z(Registers[DST]);
+    break;
+
+  case JMP_ABS:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    ProgramCounter = address;
     break;
   }
 }
