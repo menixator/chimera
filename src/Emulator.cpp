@@ -278,6 +278,9 @@ char opcode_mneumonics[][14] = {
 #define ASLA 0x25
 #define ASLB 0x35
 
+#define ASR 0x16
+#define ASRA 0x26
+#define ASRB 0x36
 
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
@@ -779,6 +782,46 @@ void Group_1(BYTE opcode) {
       Flags ^= FLAG_C;
     }
     Registers[REGISTER_B] <<= 1;
+    set_flag_n(Registers[REGISTER_B]);
+    set_flag_z(Registers[REGISTER_B]);
+    break;
+
+    // Arithmetic shift right
+  case ASR:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    if ((Memory[address] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
+      Flags ^= FLAG_C;
+    }
+
+    Memory[address] >>= 1;
+    Memory[address] |= (Memory[address] >> 6) << 7;
+
+    set_flag_n(Memory[address]);
+    set_flag_z(Memory[address]);
+    break;
+
+  case ASRA:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    if ((Registers[REGISTER_A] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
+      Flags ^= FLAG_C;
+    }
+
+    Registers[REGISTER_A] >>= 1;
+    Registers[REGISTER_A] |= (Registers[REGISTER_A] >> 6) << 7;
+
+    set_flag_n(Registers[REGISTER_A]);
+    set_flag_z(Registers[REGISTER_A]);
+    break;
+
+  case ASRB:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    if ((Registers[REGISTER_B] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
+      Flags ^= FLAG_C;
+    }
+
+    Registers[REGISTER_B] >>= 1;
+    Registers[REGISTER_B] |= (Registers[REGISTER_B] >> 6) << 7;
+
     set_flag_n(Registers[REGISTER_B]);
     set_flag_z(Registers[REGISTER_B]);
     break;
