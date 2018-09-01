@@ -311,6 +311,14 @@ char opcode_mneumonics[][14] = {
 
 #define TSA 0x09
 
+#define PUSH_A 0x5E
+#define PUSH_B 0x6E
+#define PUSH_FL 0x7E
+#define PUSH_C 0x8E
+#define PUSH_D 0x9E
+#define PUSH_E 0xAE
+#define PUSH_F 0xBE
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -463,6 +471,13 @@ void rotate_left(BYTE *byte) {
   *byte |= first_bit >> 7;
   set_flag_n(*byte);
   set_flag_z(*byte);
+}
+
+void push_to_stack(BYTE *reg) {
+  if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
+    Memory[StackPointer] = *reg;
+    StackPointer--;
+  }
 }
 
 void Group_1(BYTE opcode) {
@@ -987,6 +1002,30 @@ void Group_1(BYTE opcode) {
 
   case TSA:
     Registers[REGISTER_A] = Flags;
+    break;
+  case PUSH_A:
+    push_to_stack(&Registers[REGISTER_A]);
+    break;
+  case PUSH_B:
+    push_to_stack(&Registers[REGISTER_B]);
+    break;
+  case PUSH_FL:
+    push_to_stack(&Flags);
+    break;
+
+  case PUSH_C:
+    push_to_stack(&Registers[REGISTER_C]);
+    break;
+
+  case PUSH_D:
+    push_to_stack(&Registers[REGISTER_D]);
+    break;
+  case PUSH_E:
+    push_to_stack(&Registers[REGISTER_E]);
+    break;
+
+  case PUSH_F:
+    push_to_stack(&Registers[REGISTER_F]);
     break;
   }
 }
