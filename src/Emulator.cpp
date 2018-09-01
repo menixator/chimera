@@ -328,6 +328,10 @@ char opcode_mneumonics[][14] = {
 #define POP_F 0xBF
 
 #define LX 0x0E
+#define MVR_C 0xF8
+#define MVR_D 0xF9
+#define MVR_E 0xFA
+#define MVR_F 0xFB
 
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
@@ -1070,7 +1074,19 @@ void Group_1(BYTE opcode) {
     pop_from_stack(&Registers[REGISTER_F]);
     break;
   case LX:
-    Registers[REGISTER_A] = (((WORD)fetch()) & (WORD)fetch() << 8);
+    Registers[REGISTER_A] = fetch();
+    break;
+  case MVR_C:
+    Registers[REGISTER_C] = fetch();
+    break;
+  case MVR_D:
+    Registers[REGISTER_D] = fetch();
+    break;
+  case MVR_E:
+    Registers[REGISTER_E] = fetch();
+    break;
+  case MVR_F:
+    Registers[REGISTER_F] = fetch();
     break;
   }
 }
