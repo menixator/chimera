@@ -351,6 +351,8 @@ char opcode_mneumonics[][14] = {
 #define CHI 0x07
 #define CLE 0x08
 
+#define CLC 0x56
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1210,6 +1212,9 @@ void Group_1(BYTE opcode) {
     if (((Flags & (FLAG_N | FLAG_Z))) == 0) {
       call();
     }
+    break;
+  case CLC:
+    Flags = Flags & (0xFF - FLAG_C);
     break;
   }
 }
