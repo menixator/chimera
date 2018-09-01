@@ -678,7 +678,8 @@ void Group_1(BYTE opcode) {
 
     Memory[address] >>= 1;
     Memory[address] |= old_carry << 7;
-
+    set_flag_n(Memory[address]);
+    set_flag_z(Memory[address]);
     break;
 
   case RCRA_IMP:
@@ -691,6 +692,8 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_A] >>= 1;
     Registers[REGISTER_A] |= old_carry << 7;
 
+    set_flag_n(Registers[REGISTER_A]);
+    set_flag_z(Registers[REGISTER_A]);
     break;
 
   case RCRB_IMP:
@@ -703,6 +706,8 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_B] >>= 1;
     Registers[REGISTER_B] |= old_carry << 7;
 
+    set_flag_n(Registers[REGISTER_B]);
+    set_flag_z(Registers[REGISTER_B]);
     break;
 
   case RLC:
@@ -715,6 +720,9 @@ void Group_1(BYTE opcode) {
 
     Memory[address] <<= 1;
     Memory[address] |= old_carry << 7;
+
+    set_flag_n(Memory[address]);
+    set_flag_z(Memory[address]);
     break;
 
   case RLCA_IMP:
@@ -726,6 +734,8 @@ void Group_1(BYTE opcode) {
 
     Registers[REGISTER_A] <<= 1;
     Registers[REGISTER_A] |= old_carry << 7;
+    set_flag_n(Registers[REGISTER_A]);
+    set_flag_z(Registers[REGISTER_A]);
     break;
 
   case RLCB_IMP:
@@ -737,6 +747,9 @@ void Group_1(BYTE opcode) {
 
     Registers[REGISTER_B] <<= 1;
     Registers[REGISTER_B] |= old_carry << 7;
+
+    set_flag_n(Registers[REGISTER_B]);
+    set_flag_z(Registers[REGISTER_B]);
     break;
   }
 }
