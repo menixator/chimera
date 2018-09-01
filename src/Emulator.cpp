@@ -339,6 +339,8 @@ char opcode_mneumonics[][14] = {
 #define BEQ 0xEB
 #define BMI 0xEC
 #define BPL 0xED
+#define BLS 0xEE
+#define BHI 0xEF
 
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
@@ -516,7 +518,7 @@ void branch() {
     offset = offset + 0xFF00;
   }
 
-  if (IS_ADDRESSABLE(ProgramCounter+offset)) {
+  if (IS_ADDRESSABLE(ProgramCounter + offset)) {
     ProgramCounter += offset;
   }
 }
@@ -1130,6 +1132,17 @@ void Group_1(BYTE opcode) {
     break;
   case BPL:
     if (((Flags & FLAG_N) == FLAG_N) == 0) {
+      branch();
+    }
+    break;
+  case BLS:
+    if (((Flags & (FLAG_N | FLAG_Z))) != 0) {
+      branch();
+    }
+    break;
+
+  case BHI:
+    if (((Flags & (FLAG_N | FLAG_Z))) == 0) {
       branch();
     }
     break;
