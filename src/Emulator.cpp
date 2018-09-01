@@ -273,6 +273,9 @@ char opcode_mneumonics[][14] = {
 #define RLC 0x14
 #define RLCA_IMP 0x24
 #define RLCB_IMP 0x34
+
+#define ASL 0x15
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -748,6 +751,17 @@ void Group_1(BYTE opcode) {
 
     set_flag_n(Registers[REGISTER_B]);
     set_flag_z(Registers[REGISTER_B]);
+    break;
+
+    // Shift Left
+  case ASL:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    if ((Memory[address] & 0x80 >> 7) != (Flags & FLAG_C) == FLAG_C) {
+      Flags ^= FLAG_C;
+    }
+    Memory[address] <<= 1;
+    set_flag_n(Memory[address]);
+    set_flag_z(Memory[address]);
     break;
   }
 }
