@@ -256,6 +256,8 @@ char opcode_mneumonics[][14] = {
 #define DECA 0x22
 #define DECB 0x32
 
+#define RCR 0x13
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -389,6 +391,8 @@ void Group_1(BYTE opcode) {
 
   WORD address = 0;
   WORD data = 0;
+
+  BYTE old_carry = 0;
 
   // Register index to transfer FROM
   int SRC = -1;
@@ -654,6 +658,20 @@ void Group_1(BYTE opcode) {
     if (IS_ADDRESSABLE(address)) {
       ProgramCounter = address;
     }
+    break;
+
+  // ROTATE RIGHT THROUGH MEMORY
+  case RCR:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    old_carry = (Flags & FLAG_C) == FLAG_C;
+
+    if ((Memory[address] & 0x1) != 0x80) {
+      Flags ^= FLAG_C;
+    }
+
+    Memory[address] >>= 1;
+    Memory[address] |= old_carry << 7;
+
     break;
   }
 }
