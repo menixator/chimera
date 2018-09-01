@@ -256,8 +256,23 @@ char opcode_mneumonics[][14] = {
 #define DECA 0x22
 #define DECB 0x32
 
-#define RCR 0x13
+#define CPIA 0xFC
+#define CPIB 0xFD
+#define ANIA 0xFE
+#define ANIB 0xFF
 
+#define JMP_ABS 0x6D
+#define JR_ABS 0x00
+#define RTS_IMP 0x86
+#define BRA_REL 0xE7
+
+#define RCR 0x13
+#define RCRA_IMP 0x23
+#define RCRB_IMP 0x33
+
+#define RLC 0x14
+#define RLCA_IMP 0x24
+#define RLCB_IMP 0x34
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -330,23 +345,6 @@ char opcode_mneumonics[][14] = {
 #define IOR_LN 0xA
 #define AND_LN 0xB
 #define XOR_LN 0xC
-
-#define CPIA 0xFC
-#define CPIB 0xFD
-#define ANIA 0xFE
-#define ANIB 0xFF
-
-#define JMP_ABS 0x6D
-#define JR_ABS 0x00
-#define RTS_IMP 0x86
-#define BRA_REL 0xE7
-
-#define RCRA_IMP 0x23
-#define RCRB_IMP 0x33
-
-#define RLC 0x14
-#define RLCA_IMP 0x24
-#define RLCB_IMP 0x34
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
