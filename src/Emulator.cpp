@@ -275,6 +275,9 @@ char opcode_mneumonics[][14] = {
 #define RLCB_IMP 0x34
 
 #define ASL 0x15
+#define ASLA 0x25
+#define ASLB 0x35
+
 
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
@@ -756,12 +759,28 @@ void Group_1(BYTE opcode) {
     // Shift Left
   case ASL:
     BUILD_ADDRESS_ABS(HB, LB, address);
-    if ((Memory[address] & 0x80 >> 7) != (Flags & FLAG_C) == FLAG_C) {
+    if ((Memory[address] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
       Flags ^= FLAG_C;
     }
     Memory[address] <<= 1;
     set_flag_n(Memory[address]);
     set_flag_z(Memory[address]);
+    break;
+  case ASLA:
+    if ((Registers[REGISTER_A] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
+      Flags ^= FLAG_C;
+    }
+    Registers[REGISTER_A] <<= 1;
+    set_flag_n(Registers[REGISTER_A]);
+    set_flag_z(Registers[REGISTER_A]);
+    break;
+  case ASLB:
+    if ((Registers[REGISTER_B] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
+      Flags ^= FLAG_C;
+    }
+    Registers[REGISTER_B] <<= 1;
+    set_flag_n(Registers[REGISTER_B]);
+    set_flag_z(Registers[REGISTER_B]);
     break;
   }
 }
