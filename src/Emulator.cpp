@@ -319,6 +319,14 @@ char opcode_mneumonics[][14] = {
 #define PUSH_E 0xAE
 #define PUSH_F 0xBE
 
+#define POP_A 0x5F
+#define POP_B 0x6F
+#define POP_FL 0x7F
+#define POP_C 0x8F
+#define POP_D 0x9F
+#define POP_E 0xAF
+#define POP_F 0xBF
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -477,6 +485,13 @@ void push_to_stack(BYTE *reg) {
   if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
     Memory[StackPointer] = *reg;
     StackPointer--;
+  }
+}
+
+void pop_from_stack(BYTE *reg) {
+  if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
+    StackPointer++;
+    *reg = Memory[StackPointer];
   }
 }
 
@@ -1026,6 +1041,31 @@ void Group_1(BYTE opcode) {
 
   case PUSH_F:
     push_to_stack(&Registers[REGISTER_F]);
+    break;
+
+  case POP_A:
+    pop_from_stack(&Registers[REGISTER_A]);
+    break;
+  case POP_B:
+    pop_from_stack(&Registers[REGISTER_B]);
+    break;
+  case POP_FL:
+    pop_from_stack(&Flags);
+    break;
+
+  case POP_C:
+    pop_from_stack(&Registers[REGISTER_C]);
+    break;
+
+  case POP_D:
+    pop_from_stack(&Registers[REGISTER_D]);
+    break;
+  case POP_E:
+    pop_from_stack(&Registers[REGISTER_E]);
+    break;
+
+  case POP_F:
+    pop_from_stack(&Registers[REGISTER_F]);
     break;
   }
 }
