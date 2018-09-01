@@ -302,6 +302,13 @@ char opcode_mneumonics[][14] = {
 #define RRA 0x2B
 #define RRB 0x3B
 
+#define LODS_IMM 0x43
+#define LODS_ABS 0x53
+#define LODS_ZPG 0x63
+#define LODS_IND 0x73
+#define LODS_PAG 0x83
+#define LODS_BAS 0x93
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -952,6 +959,32 @@ void Group_1(BYTE opcode) {
     rotate_right(&Registers[REGISTER_B]);
     break;
   }
+
+case LODS_IMM:
+  BUILD_ADDRESS_IMM(HB, LB, address);
+  StackPointer = address;
+  break;
+
+case LODS_ABS:
+  BUILD_ADDRESS_ABS(HB, LB, address);
+  StackPointer = address;
+  break;
+case LODS_ZPG:
+  BUILD_ADDRESS_ZPG(HB, LB, address);
+  StackPointer = address;
+  break;
+case LODS_IND:
+  BUILD_ADDRESS_IND(HB, LB, address);
+  StackPointer = address;
+  break;
+case LODS_PAG:
+  BUILD_ADDRESS_PAG(HB, LB, address);
+  StackPointer = address;
+  break;
+case LODS_BAS:
+  BUILD_ADDRESS_BAS(HB, LB, address);
+  StackPointer = address;
+  break;
 }
 
 // Handles MOV X,Y
