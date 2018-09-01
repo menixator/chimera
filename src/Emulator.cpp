@@ -337,6 +337,7 @@ char opcode_mneumonics[][14] = {
 #define JMP_ABS 0x6D
 #define JR_ABS 0x00
 #define RTS_IMP 0x86
+#define BRA_REL 0xE7
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -383,6 +384,8 @@ void Group_1(BYTE opcode) {
   BYTE HB = 0;
   BYTE HN = opcode >> 4;
   BYTE LN = opcode & 0xF;
+
+  WORD offset = 0;
 
   WORD address = 0;
   WORD data = 0;
@@ -631,13 +634,25 @@ void Group_1(BYTE opcode) {
     break;
 
   case RTS_IMP:
-    if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE-2)){
-        StackPointer++;
-        LB = Memory[StackPointer]; 
-        StackPointer++;
-        HB = Memory[StackPointer];
-        // Set the Program Counter
-        ProgramCounter = ((WORD)HB<<8) + (WORD)LB;
+    if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
+      StackPointer++;
+      LB = Memory[StackPointer];
+      StackPointer++;
+      HB = Memory[StackPointer];
+      // Set the Program Counter
+      ProgramCounter = ((WORD)HB << 8) + (WORD)LB;
+    }
+    break;
+
+  case BRA_REL:
+    LB = fetch();
+    offset = (WORD)LB;
+    if (offset & 0x80) {
+      offset = offset + 0xFF00;
+    }
+    address = ProgramCounter + offset;
+    if (IS_ADDRESSABLE(address)) {
+      ProgramCounter = address;
     }
     break;
   }
