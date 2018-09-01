@@ -961,8 +961,7 @@ void Group_1(BYTE opcode) {
     rotate_right(&Registers[REGISTER_B]);
     break;
   case LODS_IMM:
-    BUILD_ADDRESS_IMM(HB, LB, address);
-    StackPointer = address;
+    StackPointer = (WORD)fetch() & ((WORD)fetch() << 8);
     break;
 
   case LODS_ABS:
