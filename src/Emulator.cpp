@@ -670,7 +670,7 @@ void Group_1(BYTE opcode) {
     BUILD_ADDRESS_ABS(HB, LB, address);
     old_carry = (Flags & FLAG_C) == FLAG_C;
 
-    if ((Memory[address] & 0x1) != 0x80) {
+    if ((Memory[address] & 0x1) != old_carry) {
       Flags ^= FLAG_C;
     }
 
@@ -682,7 +682,7 @@ void Group_1(BYTE opcode) {
   case RCRA_IMP:
     old_carry = (Flags & FLAG_C) == FLAG_C;
 
-    if ((Registers[REGISTER_A] & 0x1) != 0x80) {
+    if ((Registers[REGISTER_A] & 0x1) != old_carry) {
       Flags ^= FLAG_C;
     }
 
@@ -694,7 +694,7 @@ void Group_1(BYTE opcode) {
   case RCRB_IMP:
     old_carry = (Flags & FLAG_C) == FLAG_C;
 
-    if ((Registers[REGISTER_B] & 0x1) != 0x80) {
+    if ((Registers[REGISTER_B] & 0x1) != old_carry) {
       Flags ^= FLAG_C;
     }
 
