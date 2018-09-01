@@ -344,7 +344,9 @@ char opcode_mneumonics[][14] = {
 #define RCRA_IMP 0x23
 #define RCRB_IMP 0x33
 
-#define RLC 0x14  
+#define RLC 0x14
+#define RLCA_IMP 0x24
+#define RLCB_IMP 0x34
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -713,6 +715,28 @@ void Group_1(BYTE opcode) {
 
     Memory[address] <<= 1;
     Memory[address] |= old_carry << 7;
+    break;
+
+  case RLCA_IMP:
+    old_carry = (Flags & FLAG_C) == FLAG_C;
+
+    if ((Registers[REGISTER_A] & 0x80) >> 7 != old_carry) {
+      Flags ^= FLAG_C;
+    }
+
+    Registers[REGISTER_A] <<= 1;
+    Registers[REGISTER_A] |= old_carry << 7;
+    break;
+
+  case RLCB_IMP:
+    old_carry = (Flags & FLAG_C) == FLAG_C;
+
+    if ((Registers[REGISTER_B] & 0x80) >> 7 != old_carry) {
+      Flags ^= FLAG_C;
+    }
+
+    Registers[REGISTER_B] <<= 1;
+    Registers[REGISTER_B] |= old_carry << 7;
     break;
   }
 }
