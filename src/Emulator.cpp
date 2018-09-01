@@ -516,7 +516,7 @@ void branch() {
     offset = offset + 0xFF00;
   }
 
-  if (IS_ADDRESSABLE(address)) {
+  if (IS_ADDRESSABLE(ProgramCounter+offset)) {
     ProgramCounter += offset;
   }
 }
