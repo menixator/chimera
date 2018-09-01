@@ -327,6 +327,8 @@ char opcode_mneumonics[][14] = {
 #define POP_E 0xAF
 #define POP_F 0xBF
 
+#define LX 0x0E
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1066,6 +1068,9 @@ void Group_1(BYTE opcode) {
 
   case POP_F:
     pop_from_stack(&Registers[REGISTER_F]);
+    break;
+  case LX:
+    Registers[RegisterA] = (((WORD)fetch()) & (WORD)fetch() << 8);
     break;
   }
 }
