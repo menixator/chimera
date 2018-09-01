@@ -282,6 +282,10 @@ char opcode_mneumonics[][14] = {
 #define ASRA 0x26
 #define ASRB 0x36
 
+#define LSR 0x17
+#define LSRA 0x27
+#define LSRB 0x37
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -393,6 +397,15 @@ void set_flag_n(BYTE inReg) {
   } else {
     Flags = Flags & (0xFF - FLAG_N);
   }
+}
+
+void logical_shift_right(BYTE *byte) {
+  if (((*byte & 0x1) == 0x1) != ((Flags & FLAG_C) == FLAG_C)) {
+    Flags ^= FLAG_C;
+  }
+  *byte >>= 1;
+  set_flag_n(*byte);
+  set_flag_z(*byte);
 }
 
 void Group_1(BYTE opcode) {
@@ -801,7 +814,6 @@ void Group_1(BYTE opcode) {
     break;
 
   case ASRA:
-    BUILD_ADDRESS_ABS(HB, LB, address);
     if ((Registers[REGISTER_A] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
       Flags ^= FLAG_C;
     }
@@ -814,7 +826,6 @@ void Group_1(BYTE opcode) {
     break;
 
   case ASRB:
-    BUILD_ADDRESS_ABS(HB, LB, address);
     if ((Registers[REGISTER_B] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
       Flags ^= FLAG_C;
     }
@@ -824,6 +835,19 @@ void Group_1(BYTE opcode) {
 
     set_flag_n(Registers[REGISTER_B]);
     set_flag_z(Registers[REGISTER_B]);
+    break;
+
+  case LSR:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    logical_shift_right(&Memory[address]);
+    break;
+
+  case LSRA:
+    logical_shift_right(&Registers[REGISTER_A]);
+    break;
+
+  case LSRB:
+    logical_shift_right(&Registers[REGISTER_B]);
     break;
   }
 }
