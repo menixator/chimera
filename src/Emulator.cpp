@@ -288,11 +288,19 @@ char opcode_mneumonics[][14] = {
 
 #define NOT 0x18
 #define NOTA 0x28
-#define NOTB 0x29
+#define NOTB 0x38
 
 #define NEG 0x19
 #define NEGA 0x29
 #define NEGB 0x39
+
+#define RL 0x1A
+#define RLA 0x2A
+#define RLB 0x3A
+
+#define RR 0x1B
+#define RRA 0x2B
+#define RRB 0x3B
 
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
@@ -424,12 +432,28 @@ void negate(BYTE *byte) {
 }
 
 void twos_complement(BYTE *byte) {
-  *byte = 0 - byte;
+  *byte = 0 - *byte;
 
   set_flag_n(*byte);
   set_flag_z(*byte);
 
   // TODO: For some reason carry isnt required?
+}
+
+void rotate_right(BYTE *byte) {
+  BYTE last_bit = (*byte & 0x1) == 0x1;
+  *byte >>= 1;
+  *byte |= last_bit << 7;
+  set_flag_n(*byte);
+  set_flag_z(*byte);
+}
+
+void rotate_left(BYTE *byte) {
+  BYTE first_bit = (*byte & 0x80) == 0x80;
+  *byte <<= 1;
+  *byte |= first_bit >> 7;
+  set_flag_n(*byte);
+  set_flag_z(*byte);
 }
 
 void Group_1(BYTE opcode) {
@@ -898,6 +922,34 @@ void Group_1(BYTE opcode) {
 
   case NEGB:
     twos_complement(&Registers[REGISTER_B]);
+    break;
+
+  case RL:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    rotate_left(&Memory[address]);
+    break;
+
+  case RLA:
+    rotate_left(&Registers[REGISTER_A]);
+    break;
+
+  case RLB:
+    rotate_left(&Registers[REGISTER_B]);
+    break;
+
+  case RR:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    rotate_right(&Memory[address]);
+    break;
+
+  case RRA:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    rotate_right(&Registers[REGISTER_A]);
+    break;
+
+  case RRB:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    rotate_right(&Registers[REGISTER_B]);
     break;
   }
 }
