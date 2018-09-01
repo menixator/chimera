@@ -309,6 +309,8 @@ char opcode_mneumonics[][14] = {
 #define LODS_PAG 0x83
 #define LODS_BAS 0x93
 
+#define TSA 0x09
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -982,6 +984,10 @@ void Group_1(BYTE opcode) {
   case LODS_BAS:
     BUILD_ADDRESS_BAS(HB, LB, address);
     StackPointer = address;
+    break;
+
+  case TSA:
+    Registers[REGISTER_A] = Flags;
     break;
   }
 }
