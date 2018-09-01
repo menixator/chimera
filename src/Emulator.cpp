@@ -286,6 +286,10 @@ char opcode_mneumonics[][14] = {
 #define LSRA 0x27
 #define LSRB 0x37
 
+#define NOT 0x18
+#define NOTA 0x28
+#define NOTB 0x29
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -406,6 +410,13 @@ void logical_shift_right(BYTE *byte) {
   *byte >>= 1;
   set_flag_n(*byte);
   set_flag_z(*byte);
+}
+
+void negate(BYTE *byte) {
+  *byte = ~*byte;
+  set_flag_n(*byte);
+  set_flag_z(*byte);
+  // TODO: CARRY? What carry?
 }
 
 void Group_1(BYTE opcode) {
@@ -848,6 +859,19 @@ void Group_1(BYTE opcode) {
 
   case LSRB:
     logical_shift_right(&Registers[REGISTER_B]);
+    break;
+
+  case NOT:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    negate(&Memory[address]);
+    break;
+
+  case NOTA:
+    negate(&Registers[REGISTER_A]);
+    break;
+
+  case NOTB:
+    negate(&Registers[REGISTER_A]);
     break;
   }
 }
