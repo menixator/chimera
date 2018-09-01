@@ -352,6 +352,7 @@ char opcode_mneumonics[][14] = {
 #define CLE 0x08
 
 #define CLC 0x56
+#define STC 0x57
 
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
@@ -1215,6 +1216,10 @@ void Group_1(BYTE opcode) {
     break;
   case CLC:
     Flags = Flags & (0xFF - FLAG_C);
+    break;
+
+  case STC:
+    Flags |= FLAG_C;
     break;
   }
 }
