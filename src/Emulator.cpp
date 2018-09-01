@@ -342,6 +342,15 @@ char opcode_mneumonics[][14] = {
 #define BLS 0xEE
 #define BHI 0xEF
 
+#define CCC 0x01
+#define CCS 0x02
+#define CNE 0x03
+#define CEQ 0x04
+#define CMI 0x05
+#define CPL 0x06
+#define CHI 0x07
+#define CLE 0x08
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -496,9 +505,9 @@ void rotate_left(BYTE *byte) {
   set_flag_z(*byte);
 }
 
-void push_to_stack(BYTE *reg) {
+void push_to_stack(BYTE reg) {
   if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
-    Memory[StackPointer] = *reg;
+    Memory[StackPointer] = reg;
     StackPointer--;
   }
 }
@@ -523,6 +532,17 @@ void branch() {
   }
 }
 
+void call() {
+  BYTE LB = fetch();
+  BYTE HB = fetch();
+  WORD address = ((WORD)HB << 8) & ((WORD)LB);
+
+  if (IS_ADDRESSABLE(address)) {
+    push_to_stack(ProgramCounter & 0xFF);
+    push_to_stack((ProgramCounter >> 8) & 0xFF);
+    ProgramCounter = address;
+  }
+}
 void Group_1(BYTE opcode) {
   BYTE LB = 0;
   BYTE HB = 0;
@@ -1039,28 +1059,28 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_A] = Flags;
     break;
   case PUSH_A:
-    push_to_stack(&Registers[REGISTER_A]);
+    push_to_stack(Registers[REGISTER_A]);
     break;
   case PUSH_B:
-    push_to_stack(&Registers[REGISTER_B]);
+    push_to_stack(Registers[REGISTER_B]);
     break;
   case PUSH_FL:
-    push_to_stack(&Flags);
+    push_to_stack(Flags);
     break;
 
   case PUSH_C:
-    push_to_stack(&Registers[REGISTER_C]);
+    push_to_stack(Registers[REGISTER_C]);
     break;
 
   case PUSH_D:
-    push_to_stack(&Registers[REGISTER_D]);
+    push_to_stack(Registers[REGISTER_D]);
     break;
   case PUSH_E:
-    push_to_stack(&Registers[REGISTER_E]);
+    push_to_stack(Registers[REGISTER_E]);
     break;
 
   case PUSH_F:
-    push_to_stack(&Registers[REGISTER_F]);
+    push_to_stack(Registers[REGISTER_F]);
     break;
 
   case POP_A:
@@ -1144,6 +1164,51 @@ void Group_1(BYTE opcode) {
   case BHI:
     if (((Flags & (FLAG_N | FLAG_Z))) == 0) {
       branch();
+    }
+    break;
+    // Call on Carry Clear
+  case CCC:
+    if (((Flags & FLAG_C) == FLAG_C) == 0) {
+      call();
+    }
+    break;
+    // Call on Carry Set
+  case CCS:
+    if (((Flags & FLAG_C) == FLAG_C) == 1) {
+      call();
+    }
+    break;
+    // Call on Result Not Equal to Zero
+  case CNE:
+    if (((Flags & FLAG_Z) == FLAG_Z) == 0) {
+      call();
+    }
+    break;
+  case CEQ:
+    if (((Flags & FLAG_Z) == FLAG_Z) == 1) {
+      call();
+    }
+    break;
+  case CMI:
+
+    if (((Flags & FLAG_N) == FLAG_N) == 1) {
+      call();
+    }
+    break;
+  case CPL:
+    if (((Flags & FLAG_N) == FLAG_N) == 0) {
+      call();
+    }
+    break;
+
+  case CHI:
+    if (((Flags & (FLAG_N | FLAG_Z))) != 0) {
+      call();
+    }
+    break;
+  case CLE:
+    if (((Flags & (FLAG_N | FLAG_Z))) == 0) {
+      call();
     }
     break;
   }
