@@ -1070,7 +1070,7 @@ void Group_1(BYTE opcode) {
     pop_from_stack(&Registers[REGISTER_F]);
     break;
   case LX:
-    Registers[RegisterA] = (((WORD)fetch()) & (WORD)fetch() << 8);
+    Registers[REGISTER_A] = (((WORD)fetch()) & (WORD)fetch() << 8);
     break;
   }
 }
