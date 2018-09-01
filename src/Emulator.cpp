@@ -290,6 +290,10 @@ char opcode_mneumonics[][14] = {
 #define NOTA 0x28
 #define NOTB 0x29
 
+#define NEG 0x19
+#define NEGA 0x29
+#define NEGB 0x39
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -417,6 +421,15 @@ void negate(BYTE *byte) {
   set_flag_n(*byte);
   set_flag_z(*byte);
   // TODO: CARRY? What carry?
+}
+
+void twos_complement(BYTE *byte) {
+  *byte = 0 - byte;
+
+  set_flag_n(*byte);
+  set_flag_z(*byte);
+
+  // TODO: For some reason carry isnt required?
 }
 
 void Group_1(BYTE opcode) {
@@ -872,6 +885,19 @@ void Group_1(BYTE opcode) {
 
   case NOTB:
     negate(&Registers[REGISTER_A]);
+    break;
+
+  case NEG:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    twos_complement(&Memory[address]);
+    break;
+
+  case NEGA:
+    twos_complement(&Registers[REGISTER_A]);
+    break;
+
+  case NEGB:
+    twos_complement(&Registers[REGISTER_B]);
     break;
   }
 }
