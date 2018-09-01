@@ -958,33 +958,32 @@ void Group_1(BYTE opcode) {
     BUILD_ADDRESS_ABS(HB, LB, address);
     rotate_right(&Registers[REGISTER_B]);
     break;
+  case LODS_IMM:
+    BUILD_ADDRESS_IMM(HB, LB, address);
+    StackPointer = address;
+    break;
+
+  case LODS_ABS:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    StackPointer = address;
+    break;
+  case LODS_ZPG:
+    BUILD_ADDRESS_ZPG(HB, LB, address);
+    StackPointer = address;
+    break;
+  case LODS_IND:
+    BUILD_ADDRESS_IND(HB, LB, address);
+    StackPointer = address;
+    break;
+  case LODS_PAG:
+    BUILD_ADDRESS_PAG(HB, LB, address);
+    StackPointer = address;
+    break;
+  case LODS_BAS:
+    BUILD_ADDRESS_BAS(HB, LB, address);
+    StackPointer = address;
+    break;
   }
-
-case LODS_IMM:
-  BUILD_ADDRESS_IMM(HB, LB, address);
-  StackPointer = address;
-  break;
-
-case LODS_ABS:
-  BUILD_ADDRESS_ABS(HB, LB, address);
-  StackPointer = address;
-  break;
-case LODS_ZPG:
-  BUILD_ADDRESS_ZPG(HB, LB, address);
-  StackPointer = address;
-  break;
-case LODS_IND:
-  BUILD_ADDRESS_IND(HB, LB, address);
-  StackPointer = address;
-  break;
-case LODS_PAG:
-  BUILD_ADDRESS_PAG(HB, LB, address);
-  StackPointer = address;
-  break;
-case LODS_BAS:
-  BUILD_ADDRESS_BAS(HB, LB, address);
-  StackPointer = address;
-  break;
 }
 
 // Handles MOV X,Y
