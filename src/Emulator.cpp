@@ -333,6 +333,13 @@ char opcode_mneumonics[][14] = {
 #define MVR_E 0xFA
 #define MVR_F 0xFB
 
+#define BCC 0xE8
+#define BCS 0xE9
+#define BNE 0xEA
+#define BEQ 0xEB
+#define BMI 0xEC
+#define BPL 0xED
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -498,6 +505,19 @@ void pop_from_stack(BYTE *reg) {
   if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
     StackPointer++;
     *reg = Memory[StackPointer];
+  }
+}
+
+void branch() {
+  BYTE LB = fetch();
+  WORD offset = (WORD)LB;
+
+  if (offset & 0x80) {
+    offset = offset + 0xFF00;
+  }
+
+  if (IS_ADDRESSABLE(address)) {
+    ProgramCounter += offset;
   }
 }
 
@@ -769,15 +789,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case BRA_REL:
-    LB = fetch();
-    offset = (WORD)LB;
-    if (offset & 0x80) {
-      offset = offset + 0xFF00;
-    }
-    address = ProgramCounter + offset;
-    if (IS_ADDRESSABLE(address)) {
-      ProgramCounter = address;
-    }
+    branch();
     break;
 
   // ROTATE RIGHT THROUGH MEMORY
@@ -1087,6 +1099,39 @@ void Group_1(BYTE opcode) {
     break;
   case MVR_F:
     Registers[REGISTER_F] = fetch();
+    break;
+  case BCC:
+    if (((Flags & FLAG_C) == FLAG_C) == 0) {
+      branch();
+    }
+    break;
+
+  case BCS:
+    if (((Flags & FLAG_C) == FLAG_C) == 1) {
+      branch();
+    }
+    break;
+
+  case BNE:
+    if (((Flags & FLAG_Z) == FLAG_Z) == 0) {
+      branch();
+    }
+    break;
+  case BEQ:
+    if (((Flags & FLAG_Z) == FLAG_Z) == 1) {
+      branch();
+    }
+    break;
+
+  case BMI:
+    if (((Flags & FLAG_N) == FLAG_N) == 1) {
+      branch();
+    }
+    break;
+  case BPL:
+    if (((Flags & FLAG_N) == FLAG_N) == 0) {
+      branch();
+    }
     break;
   }
 }
