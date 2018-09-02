@@ -853,13 +853,14 @@ void Group_1(BYTE opcode) {
     load_memory_from_reg(Registers[REGISTER_A], address);
     break;
 
-  case STORB_ABS:
-    build_address_abs(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_B], address);
-    break;
 
   case STORA_BAS:
     build_address_bas(&HB, &LB, &address);
+    load_memory_from_reg(Registers[REGISTER_A], address);
+    break;
+
+  case STORB_ABS:
+    build_address_abs(&HB, &LB, &address);
     load_memory_from_reg(Registers[REGISTER_B], address);
     break;
 
