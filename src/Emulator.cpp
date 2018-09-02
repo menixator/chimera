@@ -393,6 +393,9 @@ char opcode_mneumonics[][14] = {
 #define STZ_PAG 0x85
 #define STZ_BAS 0x95
 
+#define DEZ 0x49
+#define INZ 0x4A
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1435,6 +1438,20 @@ void Group_1(BYTE opcode) {
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
+    break;
+
+  case DEZ:
+    if (BaseRegister > 0) {
+      BaseRegister--;
+      set_flag_z(BaseRegister);
+    }
+    break;
+
+  case INZ:
+    if (BaseRegister > 0) {
+      BaseRegister++;
+      set_flag_z(BaseRegister);
+    }
     break;
   }
 }
