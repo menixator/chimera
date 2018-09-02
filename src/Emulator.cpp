@@ -1292,27 +1292,27 @@ void Group_1(BYTE opcode) {
     break;
 
   case LDP_IMM:
-    PageRegister = ((WORD)fetch()) & ((WORD)fetch() << 8);
+    PageRegister = fetch();
     break;
   case LDP_ABS:
     BUILD_ADDRESS_ABS(HB, LB, address);
-    PageRegister = address;
+    PageRegister = Memory[address];
     break;
   case LDP_ZPG:
     BUILD_ADDRESS_ZPG(HB, LB, address);
-    PageRegister = address;
+    PageRegister = Memory[address];
     break;
   case LDP_IND:
     BUILD_ADDRESS_IND(HB, LB, address);
-    PageRegister = address;
+    PageRegister = Memory[address];
     break;
   case LDP_PAG:
     BUILD_ADDRESS_PAG(HB, LB, address);
-    PageRegister = address;
+    PageRegister = Memory[address];
     break;
   case LDP_BAS:
     BUILD_ADDRESS_BAS(HB, LB, address);
-    PageRegister = address;
+    PageRegister = Memory[address];
     break;
   case STP_ABS:
     BUILD_ADDRESS_ABS(HB, LB, address);
