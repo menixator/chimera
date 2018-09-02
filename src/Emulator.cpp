@@ -380,6 +380,19 @@ char opcode_mneumonics[][14] = {
 #define TAP 0x0A
 #define TPA 0x0B
 
+#define LDZ_IMM 0x44
+#define LDZ_ABS 0x54
+#define LDZ_ZPG 0x64
+#define LDZ_IND 0x74
+#define LDZ_PAG 0x84
+#define LDZ_BAS 0x94
+
+#define STZ_ABS 0x55
+#define STZ_ZPG 0x65
+#define STZ_IND 0x75
+#define STZ_PAG 0x85
+#define STZ_BAS 0x95
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1342,9 +1355,76 @@ void Group_1(BYTE opcode) {
     PageRegister = Registers[REGISTER_A];
     break;
 
-case TPA;
-  Registers[REGISTER_A] = PageRegister;
-  break;
+  case TPA:
+    Registers[REGISTER_A] = PageRegister;
+    break;
+
+  case LDZ_IMM:
+    BaseRegister = ((WORD)fetch()) & ((WORD)fetch() << 8);
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
+    break;
+  case LDZ_ABS:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    BaseRegister = (WORD)Memory[address];
+    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
+    break;
+  case LDZ_ZPG:
+    BUILD_ADDRESS_ZPG(HB, LB, address);
+    BaseRegister = (WORD)Memory[address];
+    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
+    break;
+  case LDZ_IND:
+    BUILD_ADDRESS_IND(HB, LB, address);
+    BaseRegister = (WORD)Memory[address];
+    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
+    break;
+  case LDZ_PAG:
+    BUILD_ADDRESS_PAG(HB, LB, address);
+    BaseRegister = (WORD)Memory[address];
+    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
+    break;
+  case LDZ_BAS:
+    BUILD_ADDRESS_BAS(HB, LB, address);
+    BaseRegister = (WORD)Memory[address];
+    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
+    break;
+  case STZ_ABS:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    Memory[address] = (BYTE)BaseRegister;
+    Memory[address + 1] = (BYTE)BaseRegister >> 8;
+
+    break;
+  case STZ_ZPG:
+    BUILD_ADDRESS_ZPG(HB, LB, address);
+    Memory[address] = (BYTE)BaseRegister;
+    Memory[address + 1] = (BYTE)BaseRegister >> 8;
+    break;
+  case STZ_IND:
+    BUILD_ADDRESS_IND(HB, LB, address);
+    Memory[address] = (BYTE)BaseRegister;
+    Memory[address + 1] = (BYTE)BaseRegister >> 8;
+    break;
+  case STZ_PAG:
+    BUILD_ADDRESS_PAG(HB, LB, address);
+    Memory[address] = (BYTE)BaseRegister;
+    Memory[address + 1] = (BYTE)BaseRegister >> 8;
+    break;
+  case STZ_BAS:
+    BUILD_ADDRESS_BAS(HB, LB, address);
+    Memory[address] = (BYTE)BaseRegister;
+    Memory[address + 1] = (BYTE)BaseRegister >> 8;
+    break;
   }
 }
 
@@ -1368,8 +1448,7 @@ void Group_2_Move(BYTE opcode) {
   //  3       D       1
   //  4       E       2
   //  5       F       3
-  BYTE source = HN < 0x2 ? 0x5 - HN :
-  HN - 0x2;
+  BYTE source = HN < 0x2 ? 0x5 - HN : HN - 0x2;
   BYTE dest = LN < 0x2 ? 0x5 - LN : LN - 0x2;
 
   assert(dest >= 0 && dest <= 5);
@@ -1523,7 +1602,7 @@ void create_file(char *filename) {
   }
 }
 
-bool getline(FILE * fp, char *buffer) {
+bool getline(FILE *fp, char *buffer) {
   bool rc;
   bool collect;
   char c;
