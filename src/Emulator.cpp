@@ -827,6 +827,7 @@ void Group_1(BYTE opcode) {
   case LDAB_PAG:
     build_address_pag(&HB, &LB, &address);
     load_reg_from_memory(&Registers[REGISTER_B], address);
+    break;
 
   case LDAB_BAS:
     build_address_bas(&HB, &LB, &address);
