@@ -399,29 +399,6 @@ char opcode_mneumonics[][14] = {
 #define DPE 0x47
 #define INP 0x48
 
-#define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
-
-#define A_OR_B(a, b, opcode)                                                   \
-  opcode == a ? REGISTER_A : opcode == b ? REGISTER_B : -1;
-
-// Arithmetic and logic operation destination register calculation.
-#define AL_OP_DST(opcode)                                                      \
-  (BETWEEN(opcode >> 4, 0x6, 0x9)                                              \
-       ? REGISTER_A                                                            \
-       : BETWEEN(opcode >> 4, 0xA, 0xD) ? REGISTER_B : -1)
-#define AL_OP_SRC(opcode)                                                      \
-  (BETWEEN(opcode >> 4, 0x6, 0xD) ? (((opcode >> 4) - 0x6) % 4) : -1)
-
-#define ALL_AL_CASES(low)                                                      \
-  case 0x60 + low:                                                             \
-  case 0x70 + low:                                                             \
-  case 0x80 + low:                                                             \
-  case 0x90 + low:                                                             \
-  case 0xA0 + low:                                                             \
-  case 0xB0 + low:                                                             \
-  case 0xC0 + low:                                                             \
-  case 0xD0 + low:
-
 #define ADD_A_C 0x67
 #define ADD_A_D 0x77
 #define ADD_A_E 0x87
@@ -432,11 +409,55 @@ char opcode_mneumonics[][14] = {
 #define ADD_B_E 0xC7
 #define ADD_B_F 0xD7
 
-#define SUB_LN 0x8
-#define CMP_LN 0x9
-#define IOR_LN 0xA
-#define AND_LN 0xB
-#define XOR_LN 0xC
+#define SUB_A_C 0x68
+#define SUB_A_D 0x78
+#define SUB_A_E 0x88
+#define SUB_A_F 0x98
+
+#define SUB_B_C 0xA8
+#define SUB_B_D 0xB8
+#define SUB_B_E 0xC8
+#define SUB_B_F 0xD8
+
+#define CMP_A_C 0x69
+#define CMP_A_D 0x79
+#define CMP_A_E 0x89
+#define CMP_A_F 0x99
+
+#define CMP_B_C 0xA9
+#define CMP_B_D 0xB9
+#define CMP_B_E 0xC9
+#define CMP_B_F 0xD9
+
+#define IOR_A_C 0x6A
+#define IOR_A_D 0x7A
+#define IOR_A_E 0x8A
+#define IOR_A_F 0x9A
+
+#define IOR_B_C 0xAA
+#define IOR_B_D 0xBA
+#define IOR_B_E 0xCA
+#define IOR_B_F 0xDA
+
+#define AND_A_C 0x6B
+#define AND_A_D 0x7B
+#define AND_A_E 0x8B
+#define AND_A_F 0x9B
+
+#define AND_B_C 0xAB
+#define AND_B_D 0xBB
+#define AND_B_E 0xCB
+#define AND_B_F 0xDB
+
+#define XOR_A_C 0x6C
+#define XOR_A_D 0x7C
+#define XOR_A_E 0x8C
+#define XOR_A_F 0x9C
+
+#define XOR_B_C 0xAC
+#define XOR_B_D 0xBC
+#define XOR_B_E 0xCC
+#define XOR_B_F 0xDC
 
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
@@ -595,6 +616,51 @@ void add(BYTE *dst, BYTE *src) {
   set_flag_z(*dst);
 }
 
+void sub(BYTE *dst, BYTE *src) {
+  WORD buffer = (WORD)*dst - (WORD)*src;
+  if ((Flags & FLAG_C) != 0) {
+    buffer--;
+  }
+  if (buffer >= 0x100) {
+    Flags = Flags | FLAG_C;
+  } else {
+    Flags = Flags & (0xFF - FLAG_C);
+  }
+  set_flag_n((BYTE)buffer);
+  set_flag_z((BYTE)buffer);
+  *dst = (BYTE)buffer;
+}
+
+void cmp(BYTE *dst, BYTE *src) {
+  WORD buffer = (WORD)*dst - (WORD)*src;
+
+  if (buffer >= 0x100) {
+    Flags = Flags | FLAG_C;
+  } else {
+    Flags = Flags & (0xFF - FLAG_C);
+  }
+  set_flag_n((BYTE)buffer);
+  set_flag_z((BYTE)buffer);
+}
+
+void ior(BYTE *dst, BYTE *src) {
+  *dst |= *src;
+  set_flag_n(*dst);
+  set_flag_z(*dst);
+}
+
+void bitwise_and(BYTE *dst, BYTE *src) {
+  *dst &= *src;
+  set_flag_n(*dst);
+  set_flag_z(*dst);
+}
+
+void bitwise_xor(BYTE *dst, BYTE *src) {
+  *dst ^= *src;
+  set_flag_n(*dst);
+  set_flag_z(*dst);
+}
+
 void call() {
   BYTE LB = fetch();
   BYTE HB = fetch();
@@ -659,7 +725,8 @@ void Group_1(BYTE opcode) {
   // LDAA(Load Accumulator A) abs
   case LDAA_ABS:
     build_address_abs(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_A], address);break;
+    load_reg_from_memory(&Registers[REGISTER_A], address);
+    break;
     break;
 
   case LDAA_ZPG:
@@ -700,7 +767,6 @@ void Group_1(BYTE opcode) {
     build_address_pag(&HB, &LB, &address);
     load_reg_from_memory(&Registers[REGISTER_B], address);
 
-
   case LDAB_BAS:
     build_address_bas(&HB, &LB, &address);
     load_reg_from_memory(&Registers[REGISTER_B], address);
@@ -715,12 +781,12 @@ void Group_1(BYTE opcode) {
     build_address_zpg(&HB, &LB, &address);
     load_memory_from_reg(Registers[REGISTER_A], address);
     break;
-        
+
   case STORA_IND:
     build_address_ind(&HB, &LB, &address);
     load_memory_from_reg(Registers[REGISTER_A], address);
     break;
-    
+
   case STORA_PAG:
     build_address_pag(&HB, &LB, &address);
     load_memory_from_reg(Registers[REGISTER_A], address);
@@ -781,74 +847,139 @@ void Group_1(BYTE opcode) {
     add(&Registers[REGISTER_B], &Registers[REGISTER_F]);
     break;
 
-    ALL_AL_CASES(SUB_LN)
-
-    SRC = AL_OP_SRC(opcode);
-    DST = AL_OP_DST(opcode);
-    buffer = (WORD)Registers[DST] - (WORD)Registers[SRC];
-    if ((Flags & FLAG_C) != 0) {
-      buffer--;
-    }
-    if (buffer >= 0x100) {
-      Flags = Flags | FLAG_C;
-    } else {
-      Flags = Flags & (0xFF - FLAG_C);
-    }
-    set_flag_n((BYTE)buffer);
-    set_flag_z((BYTE)buffer);
-    Registers[DST] = (BYTE)buffer;
+  case SUB_A_C:
+    sub(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    break;
+  case SUB_A_D:
+    sub(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    break;
+  case SUB_A_E:
+    sub(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    break;
+  case SUB_A_F:
+    sub(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    break;
+  case SUB_B_C:
+    sub(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    break;
+  case SUB_B_D:
+    sub(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    break;
+  case SUB_B_E:
+    sub(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    break;
+  case SUB_B_F:
+    sub(&Registers[REGISTER_B], &Registers[REGISTER_F]);
     break;
 
-    ALL_AL_CASES(CMP_LN)
-    SRC = AL_OP_SRC(opcode);
-    DST = AL_OP_DST(opcode);
-    buffer = (WORD)Registers[DST] - (WORD)Registers[SRC];
-
-    if (buffer >= 0x100) {
-      Flags = Flags | FLAG_C;
-    } else {
-      Flags = Flags & (0xFF - FLAG_C);
-    }
-    set_flag_n((BYTE)buffer);
-    set_flag_z((BYTE)buffer);
+  case CMP_A_C:
+    cmp(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    break;
+  case CMP_A_D:
+    cmp(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    break;
+  case CMP_A_E:
+    cmp(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    break;
+  case CMP_A_F:
+    cmp(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    break;
+  case CMP_B_C:
+    cmp(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    break;
+  case CMP_B_D:
+    cmp(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    break;
+  case CMP_B_E:
+    cmp(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    break;
+  case CMP_B_F:
+    cmp(&Registers[REGISTER_B], &Registers[REGISTER_F]);
     break;
 
-    ALL_AL_CASES(IOR_LN)
-    SRC = AL_OP_SRC(opcode);
-    DST = AL_OP_DST(opcode);
-    Registers[DST] |= Registers[SRC];
-    set_flag_n((BYTE)Registers[DST]);
-    set_flag_z((BYTE)Registers[DST]);
-
+  case IOR_A_C:
+    ior(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    break;
+  case IOR_A_D:
+    ior(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    break;
+  case IOR_A_E:
+    ior(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    break;
+  case IOR_A_F:
+    ior(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    break;
+  case IOR_B_C:
+    ior(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    break;
+  case IOR_B_D:
+    ior(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    break;
+  case IOR_B_E:
+    ior(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    break;
+  case IOR_B_F:
+    ior(&Registers[REGISTER_B], &Registers[REGISTER_F]);
     break;
 
-    ALL_AL_CASES(AND_LN)
-    SRC = AL_OP_SRC(opcode);
-    DST = AL_OP_DST(opcode);
-    Registers[DST] &= Registers[SRC];
-    set_flag_n((BYTE)Registers[DST]);
-    set_flag_z((BYTE)Registers[DST]);
+  case AND_A_C:
+    bitwise_and(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    break;
+  case AND_A_D:
+    bitwise_and(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    break;
+  case AND_A_E:
+    bitwise_and(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    break;
+  case AND_A_F:
+    bitwise_and(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    break;
+  case AND_B_C:
+    bitwise_and(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    break;
+  case AND_B_D:
+    bitwise_and(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    break;
+  case AND_B_E:
+    bitwise_and(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    break;
+  case AND_B_F:
+    bitwise_and(&Registers[REGISTER_B], &Registers[REGISTER_F]);
     break;
 
-    ALL_AL_CASES(XOR_LN)
-    SRC = AL_OP_SRC(opcode);
-    DST = AL_OP_DST(opcode);
-    Registers[DST] ^= Registers[SRC];
-    set_flag_n((BYTE)Registers[DST]);
-    set_flag_z((BYTE)Registers[DST]);
+  case XOR_A_C:
+    bitwise_xor(&Registers[REGISTER_A], &Registers[REGISTER_C]);
     break;
+  case XOR_A_D:
+    bitwise_xor(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    break;
+  case XOR_A_E:
+    bitwise_xor(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    break;
+  case XOR_A_F:
+    bitwise_xor(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    break;
+  case XOR_B_C:
+    bitwise_xor(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    break;
+  case XOR_B_D:
+    bitwise_xor(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    break;
+  case XOR_B_E:
+    bitwise_xor(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    break;
+  case XOR_B_F:
+    bitwise_xor(&Registers[REGISTER_B], &Registers[REGISTER_F]);
+    break;
+
   case CPIA:
+    data = fetch();
+    cmp(&Registers[REGISTER_A], &data);
+    break;
+
   case CPIB:
     data = fetch();
-    DST = A_OR_B(CPIA, CPIB, opcode);
-    buffer = (WORD)Registers[DST] - (WORD)data;
-    if (buffer >= 0x100) {
-      Flags = Flags | FLAG_C;
-    } else {
-      Flags = Flags & (0xFF - FLAG_C);
-    }
-    set_flag_n((BYTE)buffer);
-    set_flag_z((BYTE)buffer);
+    cmp(&Registers[REGISTER_B], &data);
     break;
 
   case ANIA:
