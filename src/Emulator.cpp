@@ -682,6 +682,16 @@ void test_value_at(WORD addr) {
   }
 }
 
+void rotate_right_through_carry(BYTE *byte) {
+  BYTE old_carry = (Flags & FLAG_C) == FLAG_C;
+  if (*byte & 0x1) != old_carry) {
+      Flags ^= FLAG_C;
+    }
+  *byte >>= 1;
+  *byte |= old_carry << 7;
+  test(*byte);
+}
+
 void call() {
   BYTE LB = fetch();
   BYTE HB = fetch();
@@ -1083,41 +1093,17 @@ void Group_1(BYTE opcode) {
   // ROTATE RIGHT THROUGH MEMORY
   case RCR:
     build_address_abs(&HB, &LB, &address);
-    old_carry = (Flags & FLAG_C) == FLAG_C;
-
-    if ((Memory[address] & 0x1) != old_carry) {
-      Flags ^= FLAG_C;
+    if (is_addressable(address)) {
+      rotate_right_through_carry(&Memory[address]);
     }
-
-    Memory[address] >>= 1;
-    Memory[address] |= old_carry << 7;
-    test(Memory[address]);
     break;
 
   case RCRA_IMP:
-    old_carry = (Flags & FLAG_C) == FLAG_C;
-
-    if ((Registers[REGISTER_A] & 0x1) != old_carry) {
-      Flags ^= FLAG_C;
-    }
-
-    Registers[REGISTER_A] >>= 1;
-    Registers[REGISTER_A] |= old_carry << 7;
-
-    test(Registers[REGISTER_A]);
+    rotate_right_through_carry(&Registers[REGISTER_A]);
     break;
 
   case RCRB_IMP:
-    old_carry = (Flags & FLAG_C) == FLAG_C;
-
-    if ((Registers[REGISTER_B] & 0x1) != old_carry) {
-      Flags ^= FLAG_C;
-    }
-
-    Registers[REGISTER_B] >>= 1;
-    Registers[REGISTER_B] |= old_carry << 7;
-
-    test(Registers[REGISTER_B]);
+    rotate_right_through_carry(&Registers[REGISTER_B]);
     break;
 
   case RLC:
