@@ -405,10 +405,10 @@ char opcode_mneumonics[][14] = {
 // If the last nibble is 0x1, it's LDAA, if the last nibble is
 // 0x2, it's LDAB
 #define LDA_DEST(opcode)                                                       \
-  ((opcode & 0x1) == 0x1 ? REGISTER_A : (opcode & 0x2) == 0x2 ? REGISTER_B : -1)
+  (((opcode & 0x1) == 0x1) ? REGISTER_A : ((opcode & 0x2) == 0x2) ? REGISTER_B : -1)
 
 #define STOR_DEST(opcode)                                                      \
-  ((opcode & 0xC) == 0xC ? REGISTER_A : (opcode & 0xD) == 0xD ? REGISTER_B : -1)
+  (((opcode & 0xC) == 0xC) ? REGISTER_A : ((opcode & 0xD) == 0xD) ? REGISTER_B : -1)
 
 #define A_OR_B(a, b, opcode)                                                   \
   opcode == a ? REGISTER_A : opcode == b ? REGISTER_B : -1;
