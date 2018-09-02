@@ -423,7 +423,6 @@ char opcode_mneumonics[][14] = {
 #define AL_OP_SRC(opcode)                                                      \
   (BETWEEN(opcode >> 4, 0x6, 0xD) ? (((opcode >> 4) - 0x6) % 4) : -1)
 
-
 #define ALL_AL_CASES(low)                                                      \
   case 0x60 + low:                                                             \
   case 0x70 + low:                                                             \
@@ -657,7 +656,7 @@ void Group_1(BYTE opcode) {
   // LDAA(Load Accumulator B) abs
   case LDAA_ABS:
   case LDAB_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
       Registers[LDA_DEST(opcode)] = Memory[address];
     }
@@ -665,7 +664,7 @@ void Group_1(BYTE opcode) {
 
   case LDAA_ZPG:
   case LDAB_ZPG:
-    build_address_zpg(&HB,& LB,& address);
+    build_address_zpg(&HB, &LB, &address);
     if (is_addressable(address)) {
       Registers[LDA_DEST(opcode)] = Memory[address];
     }
@@ -673,7 +672,7 @@ void Group_1(BYTE opcode) {
 
   case LDAA_IND:
   case LDAB_IND:
-    build_address_ind(&HB,& LB,& address);
+    build_address_ind(&HB, &LB, &address);
     if (is_addressable(address)) {
       Registers[LDA_DEST(opcode)] = Memory[address];
     }
@@ -681,7 +680,7 @@ void Group_1(BYTE opcode) {
 
   case LDAA_PAG:
   case LDAB_PAG:
-    build_address_pag(&HB,& LB,& address);
+    build_address_pag(&HB, &LB, &address);
     if (is_addressable(address)) {
       Registers[LDA_DEST(opcode)] = Memory[address];
     }
@@ -690,7 +689,7 @@ void Group_1(BYTE opcode) {
   case LDAA_BAS:
   case LDAB_BAS:
 
-    build_address_bas(&HB,& LB,& address);
+    build_address_bas(&HB, &LB, &address);
     if (is_addressable(address)) {
       Registers[LDA_DEST(opcode)] = Memory[address];
     }
@@ -698,7 +697,7 @@ void Group_1(BYTE opcode) {
 
   case STORA_ABS:
   case STORB_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
       Memory[address] = Registers[STOR_DEST(opcode)];
     }
@@ -706,7 +705,7 @@ void Group_1(BYTE opcode) {
 
   case STORA_ZPG:
   case STORB_ZPG:
-    build_address_zpg(&HB,& LB,& address);
+    build_address_zpg(&HB, &LB, &address);
     if (is_addressable(address)) {
       Memory[address] = Registers[STOR_DEST(opcode)];
     }
@@ -714,7 +713,7 @@ void Group_1(BYTE opcode) {
 
   case STORA_IND:
   case STORB_IND:
-    build_address_ind(&HB,& LB,& address);
+    build_address_ind(&HB, &LB, &address);
     if (is_addressable(address)) {
       Memory[address] = Registers[STOR_DEST(opcode)];
     }
@@ -722,7 +721,7 @@ void Group_1(BYTE opcode) {
 
   case STORA_PAG:
   case STORB_PAG:
-    build_address_pag(&HB,& LB,& address);
+    build_address_pag(&HB, &LB, &address);
     if (is_addressable(address)) {
       Memory[address] = Registers[STOR_DEST(opcode)];
     }
@@ -730,7 +729,7 @@ void Group_1(BYTE opcode) {
 
   case STORA_BAS:
   case STORB_BAS:
-    build_address_bas(&HB,& LB,& address);
+    build_address_bas(&HB, &LB, &address);
     if (is_addressable(address)) {
       Memory[address] = Registers[STOR_DEST(opcode)];
     }
@@ -870,12 +869,12 @@ void Group_1(BYTE opcode) {
     break;
 
   case JMP_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     ProgramCounter = address;
     break;
 
   case JR_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     // We are going to push two bytes
     if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
       Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
@@ -903,7 +902,7 @@ void Group_1(BYTE opcode) {
 
   // ROTATE RIGHT THROUGH MEMORY
   case RCR:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     old_carry = (Flags & FLAG_C) == FLAG_C;
 
     if ((Memory[address] & 0x1) != old_carry) {
@@ -945,7 +944,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case RLC:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     old_carry = (Flags & FLAG_C) == FLAG_C;
 
     if ((Memory[address] & 0x80) >> 7 != old_carry) {
@@ -988,7 +987,7 @@ void Group_1(BYTE opcode) {
 
   // Shift Left
   case ASL:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     if ((Memory[address] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
       Flags ^= FLAG_C;
     }
@@ -1015,7 +1014,7 @@ void Group_1(BYTE opcode) {
 
   // Arithmetic shift right
   case ASR:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     if ((Memory[address] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
       Flags ^= FLAG_C;
     }
@@ -1052,7 +1051,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case LSR:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     logical_shift_right(&Memory[address]);
     break;
 
@@ -1065,7 +1064,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case NOT:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     negate(&Memory[address]);
     break;
 
@@ -1078,7 +1077,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case NEG:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     twos_complement(&Memory[address]);
     break;
 
@@ -1091,7 +1090,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case RL:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     rotate_left(&Memory[address]);
     break;
 
@@ -1104,17 +1103,17 @@ void Group_1(BYTE opcode) {
     break;
 
   case RR:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     rotate_right(&Memory[address]);
     break;
 
   case RRA:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     rotate_right(&Registers[REGISTER_A]);
     break;
 
   case RRB:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     rotate_right(&Registers[REGISTER_B]);
     break;
   case LODS_IMM:
@@ -1122,23 +1121,23 @@ void Group_1(BYTE opcode) {
     break;
 
   case LODS_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     StackPointer = address;
     break;
   case LODS_ZPG:
-    build_address_zpg(&HB,& LB,& address);
+    build_address_zpg(&HB, &LB, &address);
     StackPointer = address;
     break;
   case LODS_IND:
-    build_address_ind(&HB,& LB,& address);
+    build_address_ind(&HB, &LB, &address);
     StackPointer = address;
     break;
   case LODS_PAG:
-    build_address_pag(&HB,& LB,& address);
+    build_address_pag(&HB, &LB, &address);
     StackPointer = address;
     break;
   case LODS_BAS:
-    build_address_bas(&HB,& LB,& address);
+    build_address_bas(&HB, &LB, &address);
     StackPointer = address;
     break;
 
@@ -1358,43 +1357,43 @@ void Group_1(BYTE opcode) {
     PageRegister = fetch();
     break;
   case LDP_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     PageRegister = Memory[address];
     break;
   case LDP_ZPG:
-    build_address_zpg(&HB,& LB,& address);
+    build_address_zpg(&HB, &LB, &address);
     PageRegister = Memory[address];
     break;
   case LDP_IND:
-    build_address_ind(&HB,& LB,& address);
+    build_address_ind(&HB, &LB, &address);
     PageRegister = Memory[address];
     break;
   case LDP_PAG:
-    build_address_pag(&HB,& LB,& address);
+    build_address_pag(&HB, &LB, &address);
     PageRegister = Memory[address];
     break;
   case LDP_BAS:
-    build_address_bas(&HB,& LB,& address);
+    build_address_bas(&HB, &LB, &address);
     PageRegister = Memory[address];
     break;
   case STP_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     Memory[address] = PageRegister;
     break;
   case STP_ZPG:
-    build_address_zpg(&HB,& LB,& address);
+    build_address_zpg(&HB, &LB, &address);
     Memory[address] = PageRegister;
     break;
   case STP_IND:
-    build_address_ind(&HB,& LB,& address);
+    build_address_ind(&HB, &LB, &address);
     Memory[address] = PageRegister;
     break;
   case STP_PAG:
-    build_address_pag(&HB,& LB,& address);
+    build_address_pag(&HB, &LB, &address);
     Memory[address] = PageRegister;
     break;
   case STP_BAS:
-    build_address_bas(&HB,& LB,& address);
+    build_address_bas(&HB, &LB, &address);
     Memory[address] = PageRegister;
     break;
 
@@ -1412,70 +1411,70 @@ void Group_1(BYTE opcode) {
     set_flag_z(BaseRegister);
     break;
   case LDZ_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     BaseRegister = (WORD)Memory[address];
     BaseRegister |= (((WORD)Memory[address + 1]) << 8);
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case LDZ_ZPG:
-    build_address_zpg(&HB,& LB,& address);
+    build_address_zpg(&HB, &LB, &address);
     BaseRegister = (WORD)Memory[address];
     BaseRegister |= (((WORD)Memory[address + 1]) << 8);
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case LDZ_IND:
-    build_address_ind(&HB,& LB,& address);
+    build_address_ind(&HB, &LB, &address);
     BaseRegister = (WORD)Memory[address];
     BaseRegister |= (((WORD)Memory[address + 1]) << 8);
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case LDZ_PAG:
-    build_address_pag(&HB,& LB,& address);
+    build_address_pag(&HB, &LB, &address);
     BaseRegister = (WORD)Memory[address];
     BaseRegister |= (((WORD)Memory[address + 1]) << 8);
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case LDZ_BAS:
-    build_address_bas(&HB,& LB,& address);
+    build_address_bas(&HB, &LB, &address);
     BaseRegister = (WORD)Memory[address];
     BaseRegister |= (((WORD)Memory[address + 1]) << 8);
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case STZ_ABS:
-    build_address_abs(&HB,& LB,& address);
+    build_address_abs(&HB, &LB, &address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case STZ_ZPG:
-    build_address_zpg(&HB,& LB,& address);
+    build_address_zpg(&HB, &LB, &address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case STZ_IND:
-    build_address_ind(&HB,& LB,& address);
+    build_address_ind(&HB, &LB, &address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case STZ_PAG:
-    build_address_pag(&HB,& LB,& address);
+    build_address_pag(&HB, &LB, &address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
   case STZ_BAS:
-    build_address_bas(&HB,& LB,& address);
+    build_address_bas(&HB, &LB, &address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
     set_flag_n(BaseRegister);
