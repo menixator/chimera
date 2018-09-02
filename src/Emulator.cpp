@@ -419,7 +419,7 @@ char opcode_mneumonics[][14] = {
        ? REGISTER_A                                                            \
        : BETWEEN(opcode >> 4, 0xA, 0xD) ? REGISTER_B : -1)
 #define AL_OP_SRC(opcode)                                                      \
-  (BETWEEN(opcode >> 4, 0x6, 0xD) ? (opcode >> 4) - 0x6 % 4 : -1)
+  (BETWEEN(opcode >> 4, 0x6, 0xD) ? (((opcode >> 4) - 0x6) % 4) : -1)
 
 #define BUILD_ADDRESS_ABS(high, low, addr)                                     \
   do {                                                                         \
