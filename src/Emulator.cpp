@@ -377,6 +377,9 @@ char opcode_mneumonics[][14] = {
 #define STP_PAG 0x70
 #define STP_BAS 0x80
 
+#define TAP 0x0A
+#define TPA 0x0B
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1334,6 +1337,14 @@ void Group_1(BYTE opcode) {
     BUILD_ADDRESS_BAS(HB, LB, address);
     Memory[address] = PageRegister;
     break;
+
+  case TAP:
+    PageRegister = Registers[REGISTER_A];
+    break;
+
+case TPA;
+  Registers[REGISTER_A] = PageRegister;
+  break;
   }
 }
 
@@ -1357,7 +1368,8 @@ void Group_2_Move(BYTE opcode) {
   //  3       D       1
   //  4       E       2
   //  5       F       3
-  BYTE source = HN < 0x2 ? 0x5 - HN : HN - 0x2;
+  BYTE source = HN < 0x2 ? 0x5 - HN :
+  HN - 0x2;
   BYTE dest = LN < 0x2 ? 0x5 - LN : LN - 0x2;
 
   assert(dest >= 0 && dest <= 5);
@@ -1511,7 +1523,7 @@ void create_file(char *filename) {
   }
 }
 
-bool getline(FILE *fp, char *buffer) {
+bool getline(FILE * fp, char *buffer) {
   bool rc;
   bool collect;
   char c;
