@@ -526,7 +526,7 @@ void set_flag_n(BYTE inReg) {
 
   if ((reg & 0x80) != 0) // msbit set
   {
-    Flags = Flags | FLAG_Z;
+    Flags = Flags | FLAG_N;
   } else {
     Flags = Flags & (0xFF - FLAG_N);
   }
