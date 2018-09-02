@@ -1091,8 +1091,7 @@ void Group_1(BYTE opcode) {
 
     Memory[address] >>= 1;
     Memory[address] |= old_carry << 7;
-    set_flag_n(Memory[address]);
-    set_flag_z(Memory[address]);
+    test(Memory[address]);
     break;
 
   case RCRA_IMP:
@@ -1105,8 +1104,7 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_A] >>= 1;
     Registers[REGISTER_A] |= old_carry << 7;
 
-    set_flag_n(Registers[REGISTER_A]);
-    set_flag_z(Registers[REGISTER_A]);
+    test(Registers[REGISTER_A]);
     break;
 
   case RCRB_IMP:
@@ -1119,8 +1117,7 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_B] >>= 1;
     Registers[REGISTER_B] |= old_carry << 7;
 
-    set_flag_n(Registers[REGISTER_B]);
-    set_flag_z(Registers[REGISTER_B]);
+    test(Registers[REGISTER_B]);
     break;
 
   case RLC:
@@ -1133,9 +1130,7 @@ void Group_1(BYTE opcode) {
 
     Memory[address] <<= 1;
     Memory[address] |= old_carry << 7;
-
-    set_flag_n(Memory[address]);
-    set_flag_z(Memory[address]);
+    test(Memory[address]);
     break;
 
   case RLCA_IMP:
@@ -1147,8 +1142,8 @@ void Group_1(BYTE opcode) {
 
     Registers[REGISTER_A] <<= 1;
     Registers[REGISTER_A] |= old_carry << 7;
-    set_flag_n(Registers[REGISTER_A]);
-    set_flag_z(Registers[REGISTER_A]);
+
+    test(Registers[REGISTER_A]);
     break;
 
   case RLCB_IMP:
@@ -1161,8 +1156,7 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_B] <<= 1;
     Registers[REGISTER_B] |= old_carry << 7;
 
-    set_flag_n(Registers[REGISTER_B]);
-    set_flag_z(Registers[REGISTER_B]);
+    test(Registers[REGISTER_B]);
     break;
 
   // Shift Left
@@ -1172,24 +1166,21 @@ void Group_1(BYTE opcode) {
       Flags ^= FLAG_C;
     }
     Memory[address] <<= 1;
-    set_flag_n(Memory[address]);
-    set_flag_z(Memory[address]);
+    test(Memory[address]);
     break;
   case ASLA:
     if ((Registers[REGISTER_A] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
       Flags ^= FLAG_C;
     }
     Registers[REGISTER_A] <<= 1;
-    set_flag_n(Registers[REGISTER_A]);
-    set_flag_z(Registers[REGISTER_A]);
+    test(Registers[REGISTER_A]);
     break;
   case ASLB:
     if ((Registers[REGISTER_B] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
       Flags ^= FLAG_C;
     }
     Registers[REGISTER_B] <<= 1;
-    set_flag_n(Registers[REGISTER_B]);
-    set_flag_z(Registers[REGISTER_B]);
+    test(Registers[REGISTER_B]);
     break;
 
   // Arithmetic shift right
@@ -1202,8 +1193,7 @@ void Group_1(BYTE opcode) {
     Memory[address] >>= 1;
     Memory[address] |= (Memory[address] >> 6) << 7;
 
-    set_flag_n(Memory[address]);
-    set_flag_z(Memory[address]);
+    test(Memory[address]);
     break;
 
   case ASRA:
@@ -1213,9 +1203,7 @@ void Group_1(BYTE opcode) {
 
     Registers[REGISTER_A] >>= 1;
     Registers[REGISTER_A] |= (Registers[REGISTER_A] >> 6) << 7;
-
-    set_flag_n(Registers[REGISTER_A]);
-    set_flag_z(Registers[REGISTER_A]);
+    test(Registers[REGISTER_A]);
     break;
 
   case ASRB:
@@ -1226,8 +1214,7 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_B] >>= 1;
     Registers[REGISTER_B] |= (Registers[REGISTER_B] >> 6) << 7;
 
-    set_flag_n(Registers[REGISTER_B]);
-    set_flag_z(Registers[REGISTER_B]);
+    test(Registers[REGISTER_B]);
     break;
 
   case LSR:
