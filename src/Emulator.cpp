@@ -1265,16 +1265,17 @@ void Group_1(BYTE opcode) {
     break;
 
   case RTI:
-    pop_from_stack(&Registers[REGISTER_A]);
-    pop_from_stack(&Registers[REGISTER_B]);
+    pop_from_stack(&Registers[REGISTER_F]);
+    pop_from_stack(&Registers[REGISTER_E]);
+    pop_from_stack(&Registers[REGISTER_D]);
+    pop_from_stack(&Registers[REGISTER_C]);
+    pop_from_stack(&Flags);
     pop_from_stack(&HB);
     pop_from_stack(&LB);
     ProgramCounter = ((WORD)HB << 8) & ((WORD)LB);
-    pop_from_stack(&Flags);
-    pop_from_stack(&Registers[REGISTER_C]);
-    pop_from_stack(&Registers[REGISTER_D]);
-    pop_from_stack(&Registers[REGISTER_E]);
-    pop_from_stack(&Registers[REGISTER_F]);
+    pop_from_stack(&Registers[REGISTER_B]);
+    pop_from_stack(&Registers[REGISTER_A]);
+    
     break;
   }
 }
