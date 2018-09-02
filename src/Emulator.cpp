@@ -699,7 +699,7 @@ void rotate_left_through_carry(BYTE *byte) {
     Flags ^= FLAG_C;
   }
   *byte <<= 1;
-  *byte |= old_carry << 7;
+  *byte |= old_carry;
   test(*byte);
 }
 
