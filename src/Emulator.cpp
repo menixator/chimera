@@ -1403,27 +1403,36 @@ void Group_1(BYTE opcode) {
     BUILD_ADDRESS_ABS(HB, LB, address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
-
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
     break;
   case STZ_ZPG:
     BUILD_ADDRESS_ZPG(HB, LB, address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
     break;
   case STZ_IND:
     BUILD_ADDRESS_IND(HB, LB, address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
     break;
   case STZ_PAG:
     BUILD_ADDRESS_PAG(HB, LB, address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
     break;
   case STZ_BAS:
     BUILD_ADDRESS_BAS(HB, LB, address);
     Memory[address] = (BYTE)BaseRegister;
     Memory[address + 1] = (BYTE)BaseRegister >> 8;
+    set_flag_n(BaseRegister);
+    set_flag_z(BaseRegister);
     break;
   }
 }
