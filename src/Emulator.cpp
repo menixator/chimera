@@ -777,11 +777,6 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_A] = data;
     break;
 
-  case LDAB_IMM:
-    data = fetch();
-    Registers[REGISTER_B] = data;
-    break;
-
   // LDAA(Load Accumulator A) abs
   case LDAA_ABS:
     build_address_abs(&HB, &LB, &address);
@@ -807,7 +802,13 @@ void Group_1(BYTE opcode) {
     build_address_bas(&HB, &LB, &address);
     load_reg_from_memory(&Registers[REGISTER_A], address);
     break;
+
   // LDAB(Load Accumulator B) abs
+  case LDAB_IMM:
+    data = fetch();
+    Registers[REGISTER_B] = data;
+    break;
+
   case LDAB_ABS:
     build_address_abs(&HB, &LB, &address);
     load_reg_from_memory(&Registers[REGISTER_B], address);
@@ -859,7 +860,7 @@ void Group_1(BYTE opcode) {
 
   case STORA_BAS:
     build_address_bas(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_A], address);
+    load_memory_from_reg(Registers[REGISTER_B], address);
     break;
 
   case STORB_ZPG:
