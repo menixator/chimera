@@ -1200,7 +1200,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case NOTB:
-    negate(&Registers[REGISTER_A]);
+    negate(&Registers[REGISTER_B]);
     break;
 
   case NEG:
