@@ -711,7 +711,7 @@ void arithmetic_shift_left(BYTE *byte) {
   test(*byte);
 }
 
-void airthmetic_shift_right(BYTE *byte) {
+void arithmetic_shift_right(BYTE *byte) {
   if ((*byte & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
     Flags ^= FLAG_C;
   }
