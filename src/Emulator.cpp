@@ -364,6 +364,13 @@ char opcode_mneumonics[][14] = {
 #define SWI 0x3E
 #define RTI 0x3F
 
+#define LDP_IMM 0x90
+#define LDP_ABS 0xA0
+#define LDP_ZPG 0xB0
+#define LDP_IND 0xC0
+#define LDP_PAG 0xD0
+#define LDP_BAS 0xE0
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1275,8 +1282,32 @@ void Group_1(BYTE opcode) {
     ProgramCounter = ((WORD)HB << 8) & ((WORD)LB);
     pop_from_stack(&Registers[REGISTER_B]);
     pop_from_stack(&Registers[REGISTER_A]);
-    
+
     break;
+
+  case LDP_IMM:
+    PageRegister = ((WORD)fetch()) & ((WORD)fetch() << 8);
+    break;
+  case LDP_ABS:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    PageRegister = address;
+    break;
+  case LDP_ZPG:
+    BUILD_ADDRESS_ZPG(HB, LB, address);
+    PageRegister = address;
+    break;
+  case LDP_IND:
+    BUILD_ADDRESS_IND(HB, LB, address);
+    PageRegister = address;
+    break;
+  case LDP_PAG:
+    BUILD_ADDRESS_PAG(HB, LB, address);
+    PageRegister = address;
+    break;
+  case LDP_BAS:
+    BUILD_ADDRESS_BAS(HB, LB, address);
+    PageRegister = address;
+    break:
   }
 }
 
