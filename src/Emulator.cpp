@@ -371,6 +371,12 @@ char opcode_mneumonics[][14] = {
 #define LDP_PAG 0xD0
 #define LDP_BAS 0xE0
 
+#define STP_ABS 0x40
+#define STP_ZPG 0x50
+#define STP_IND 0x60
+#define STP_PAG 0x70
+#define STP_BAS 0x80
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1307,7 +1313,27 @@ void Group_1(BYTE opcode) {
   case LDP_BAS:
     BUILD_ADDRESS_BAS(HB, LB, address);
     PageRegister = address;
-    break:
+    break;
+  case STP_ABS:
+    BUILD_ADDRESS_ABS(HB, LB, address);
+    Memory[address] = PageRegister;
+    break;
+  case STP_ZPG:
+    BUILD_ADDRESS_ZPG(HB, LB, address);
+    Memory[address] = PageRegister;
+    break;
+  case STP_IND:
+    BUILD_ADDRESS_IND(HB, LB, address);
+    Memory[address] = PageRegister;
+    break;
+  case STP_PAG:
+    BUILD_ADDRESS_PAG(HB, LB, address);
+    Memory[address] = PageRegister;
+    break;
+  case STP_BAS:
+    BUILD_ADDRESS_BAS(HB, LB, address);
+    Memory[address] = PageRegister;
+    break;
   }
 }
 
