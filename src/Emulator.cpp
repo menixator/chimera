@@ -684,9 +684,9 @@ void test_value_at(WORD addr) {
 
 void rotate_right_through_carry(BYTE *byte) {
   BYTE old_carry = (Flags & FLAG_C) == FLAG_C;
-  if (*byte & 0x1) != old_carry) {
-      Flags ^= FLAG_C;
-    }
+  if ((*byte & 0x1) != old_carry) {
+    Flags ^= FLAG_C;
+  }
   *byte >>= 1;
   *byte |= old_carry << 7;
   test(*byte);
@@ -700,6 +700,24 @@ void rotate_left_through_carry(BYTE *byte) {
   }
   *byte <<= 1;
   *byte |= old_carry << 7;
+  test(*byte);
+}
+
+void arithmetic_shift_left(BYTE *byte) {
+  if ((*byte & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
+    Flags ^= FLAG_C;
+  }
+  *byte <<= 1;
+  test(*byte);
+}
+
+void airthmetic_shift_right(BYTE *byte) {
+  if ((*byte & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
+    Flags ^= FLAG_C;
+  }
+
+  *byte >>= 1;
+  *byte |= (Registers[REGISTER_A] >> 6) << 7;
   test(*byte);
 }
 
@@ -1120,74 +1138,42 @@ void Group_1(BYTE opcode) {
   case RLC:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
-      rotate_right_through_carry(&Memory[address]);
+      rotate_left_through_carry(&Memory[address]);
     }
     break;
 
   case RLCA_IMP:
-    rotate_right_through_carry(&Registers[REGISTER_A]);
+    rotate_left_through_carry(&Registers[REGISTER_A]);
     break;
 
   case RLCB_IMP:
-    rotate_right_through_carry(&Registers[REGISTER_B]);
+    rotate_left_through_carry(&Registers[REGISTER_B]);
     break;
 
   // Shift Left
   case ASL:
     build_address_abs(&HB, &LB, &address);
-    if ((Memory[address] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
-      Flags ^= FLAG_C;
-    }
-    Memory[address] <<= 1;
-    test(Memory[address]);
+    arithmetic_shift_left(&Memory[address]);
     break;
   case ASLA:
-    if ((Registers[REGISTER_A] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
-      Flags ^= FLAG_C;
-    }
-    Registers[REGISTER_A] <<= 1;
-    test(Registers[REGISTER_A]);
+    arithmetic_shift_left(&Registers[REGISTER_A]);
     break;
   case ASLB:
-    if ((Registers[REGISTER_B] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
-      Flags ^= FLAG_C;
-    }
-    Registers[REGISTER_B] <<= 1;
-    test(Registers[REGISTER_B]);
+    arithmetic_shift_left(&Registers[REGISTER_B]);
     break;
 
   // Arithmetic shift right
   case ASR:
     build_address_abs(&HB, &LB, &address);
-    if ((Memory[address] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
-      Flags ^= FLAG_C;
-    }
-
-    Memory[address] >>= 1;
-    Memory[address] |= (Memory[address] >> 6) << 7;
-
-    test(Memory[address]);
+    arithmetic_shift_right(&Memory[address]);
     break;
 
   case ASRA:
-    if ((Registers[REGISTER_A] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
-      Flags ^= FLAG_C;
-    }
-
-    Registers[REGISTER_A] >>= 1;
-    Registers[REGISTER_A] |= (Registers[REGISTER_A] >> 6) << 7;
-    test(Registers[REGISTER_A]);
+    arithmetic_shift_right(&Registers[REGISTER_A]);
     break;
 
   case ASRB:
-    if ((Registers[REGISTER_B] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
-      Flags ^= FLAG_C;
-    }
-
-    Registers[REGISTER_B] >>= 1;
-    Registers[REGISTER_B] |= (Registers[REGISTER_B] >> 6) << 7;
-
-    test(Registers[REGISTER_B]);
+    arithmetic_shift_right(&Registers[REGISTER_B]);
     break;
 
   case LSR:
