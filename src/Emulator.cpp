@@ -361,6 +361,9 @@ char opcode_mneumonics[][14] = {
 #define NOP 0x2E
 #define WAI 0x2F
 
+#define SWI 0x3E
+#define RTI 0x3F
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1247,6 +1250,31 @@ void Group_1(BYTE opcode) {
 
   case WAI:
     halt = true;
+    break;
+
+  case SWI:
+    push_to_stack(Registers[REGISTER_A]);
+    push_to_stack(Registers[REGISTER_B]);
+    push_to_stack(ProgramCounter & 0xFF);
+    push_to_stack((ProgramCounter >> 8) & 0xFF);
+    push_to_stack(Flags);
+    push_to_stack(Registers[REGISTER_C]);
+    push_to_stack(Registers[REGISTER_D]);
+    push_to_stack(Registers[REGISTER_E]);
+    push_to_stack(Registers[REGISTER_F]);
+    break;
+
+  case RTI:
+    pop_from_stack(&Registers[REGISTER_A]);
+    pop_from_stack(&Registers[REGISTER_B]);
+    pop_from_stack(&HB);
+    pop_from_stack(&LB);
+    ProgramCounter = ((WORD)HB << 8) & ((WORD)LB);
+    pop_from_stack(&Flags);
+    pop_from_stack(&Registers[REGISTER_C]);
+    pop_from_stack(&Registers[REGISTER_D]);
+    pop_from_stack(&Registers[REGISTER_E]);
+    pop_from_stack(&Registers[REGISTER_F]);
     break;
   }
 }
