@@ -401,17 +401,6 @@ char opcode_mneumonics[][14] = {
 
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
-// Helper macro to determine the destination accumulator.
-// If the last nibble is 0x1, it's LDAA, if the last nibble is
-// 0x2, it's LDAB
-#define LDA_DEST(opcode)                                                       \
-  (((opcode & 0xF) == 0x1) ? REGISTER_A                                        \
-                           : ((opcode & 0xF) == 0x2) ? REGISTER_B : -1)
-
-#define STOR_DEST(opcode)                                                      \
-  (((opcode & 0xF) == 0xC) ? REGISTER_A                                        \
-                           : ((opcode & 0xF) == 0xD) ? REGISTER_B : -1)
-
 #define A_OR_B(a, b, opcode)                                                   \
   opcode == a ? REGISTER_A : opcode == b ? REGISTER_B : -1;
 
@@ -617,6 +606,19 @@ void call() {
     ProgramCounter = address;
   }
 }
+
+void load_reg_from_memory(BYTE *dst, WORD address) {
+  if (is_addressable(address)) {
+    *dst = Memory[address];
+  }
+}
+
+void load_memory_from_reg(BYTE dst, WORD address) {
+  if (is_addressable(address)) {
+    Memory[address] = dst;
+  }
+}
+
 void Group_1(BYTE opcode) {
   BYTE LB = 0;
   BYTE HB = 0;
@@ -644,95 +646,113 @@ void Group_1(BYTE opcode) {
     assert(strcmp(opcode_mneumonics[opcode], "ILLEGAL     ") == 0);
     break;
 
-  // LDAA(Load Accumulator A) #
-  // LDAA(Load Accumulator B) #
   case LDAA_IMM:
-  case LDAB_IMM:
     data = fetch();
-    Registers[LDA_DEST(opcode)] = data;
+    Registers[REGISTER_A] = data;
+    break;
+
+  case LDAB_IMM:
+    Registers[REGISTER_B] = data;
     break;
 
   // LDAA(Load Accumulator A) abs
-  // LDAA(Load Accumulator B) abs
   case LDAA_ABS:
-  case LDAB_ABS:
     build_address_abs(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Registers[LDA_DEST(opcode)] = Memory[address];
-    }
+    load_reg_from_memory(&Registers[REGISTER_A], address);break;
     break;
 
   case LDAA_ZPG:
-  case LDAB_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Registers[LDA_DEST(opcode)] = Memory[address];
-    }
+    load_reg_from_memory(&Registers[REGISTER_A], address);
     break;
 
   case LDAA_IND:
-  case LDAB_IND:
     build_address_ind(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Registers[LDA_DEST(opcode)] = Memory[address];
-    }
+    load_reg_from_memory(&Registers[REGISTER_A], address);
     break;
 
   case LDAA_PAG:
-  case LDAB_PAG:
     build_address_pag(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Registers[LDA_DEST(opcode)] = Memory[address];
-    }
+    load_reg_from_memory(&Registers[REGISTER_A], address);
+    break;
+  case LDAA_BAS:
+    build_address_bas(&HB, &LB, &address);
+    load_reg_from_memory(&Registers[REGISTER_A], address);
+    break;
+  // LDAB(Load Accumulator B) abs
+  case LDAB_ABS:
+    build_address_abs(&HB, &LB, &address);
+    load_reg_from_memory(&Registers[REGISTER_B], address);
     break;
 
-  case LDAA_BAS:
-  case LDAB_BAS:
+  case LDAB_ZPG:
+    build_address_zpg(&HB, &LB, &address);
+    load_reg_from_memory(&Registers[REGISTER_B], address);
+    break;
 
+  case LDAB_IND:
+    build_address_ind(&HB, &LB, &address);
+    load_reg_from_memory(&Registers[REGISTER_B], address);
+    break;
+
+  case LDAB_PAG:
+    build_address_pag(&HB, &LB, &address);
+    load_reg_from_memory(&Registers[REGISTER_B], address);
+
+
+  case LDAB_BAS:
     build_address_bas(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Registers[LDA_DEST(opcode)] = Memory[address];
-    }
+    load_reg_from_memory(&Registers[REGISTER_B], address);
     break;
 
   case STORA_ABS:
-  case STORB_ABS:
     build_address_abs(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Memory[address] = Registers[STOR_DEST(opcode)];
-    }
+    load_memory_from_reg(Registers[REGISTER_A], address);
     break;
 
   case STORA_ZPG:
-  case STORB_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Memory[address] = Registers[STOR_DEST(opcode)];
-    }
+    load_memory_from_reg(Registers[REGISTER_A], address);
     break;
-
+        
   case STORA_IND:
-  case STORB_IND:
     build_address_ind(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Memory[address] = Registers[STOR_DEST(opcode)];
-    }
+    load_memory_from_reg(Registers[REGISTER_A], address);
+    break;
+    
+  case STORA_PAG:
+    build_address_pag(&HB, &LB, &address);
+    load_memory_from_reg(Registers[REGISTER_A], address);
     break;
 
-  case STORA_PAG:
-  case STORB_PAG:
-    build_address_pag(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Memory[address] = Registers[STOR_DEST(opcode)];
-    }
+  case STORB_ABS:
+    build_address_abs(&HB, &LB, &address);
+    load_memory_from_reg(Registers[REGISTER_B], address);
     break;
 
   case STORA_BAS:
+    build_address_bas(&HB, &LB, &address);
+    load_memory_from_reg(Registers[REGISTER_A], address);
+    break;
+
+  case STORB_ZPG:
+    build_address_zpg(&HB, &LB, &address);
+    load_memory_from_reg(Registers[REGISTER_B], address);
+    break;
+
+  case STORB_IND:
+    build_address_ind(&HB, &LB, &address);
+    load_memory_from_reg(Registers[REGISTER_B], address);
+    break;
+
+  case STORB_PAG:
+    build_address_pag(&HB, &LB, &address);
+    load_memory_from_reg(Registers[REGISTER_B], address);
+    break;
+
   case STORB_BAS:
     build_address_bas(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      Memory[address] = Registers[STOR_DEST(opcode)];
-    }
+    load_memory_from_reg(Registers[REGISTER_B], address);
     break;
 
   case ADD_A_C:
