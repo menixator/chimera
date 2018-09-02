@@ -666,7 +666,7 @@ void increment(BYTE *dst) {
 
 void decrement_value_at(WORD addr) {
   if (is_addressable(addr)) {
-    increment(&Memory[addr]);
+    decrement(&Memory[addr]);
   }
 }
 
@@ -1048,7 +1048,6 @@ void Group_1(BYTE opcode) {
     break;
 
   case ANIB:
-    data = fetch();
     bitwise_and(&Registers[REGISTER_B], fetch());
     break;
 
