@@ -1036,12 +1036,11 @@ void Group_1(BYTE opcode) {
     break;
 
   case CPIA:
-    cmp(Registers[REGISTER_A], fetch());
+    cmp(fetch(), Registers[REGISTER_A]);
     break;
 
   case CPIB:
-    data = fetch();
-    cmp(Registers[REGISTER_B], fetch());
+    cmp(fetch(), Registers[REGISTER_B]);
     break;
 
   case ANIA:
