@@ -652,6 +652,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case LDAB_IMM:
+    data = fetch();
     Registers[REGISTER_B] = data;
     break;
 
