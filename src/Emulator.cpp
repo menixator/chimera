@@ -760,26 +760,6 @@ void Group_1(BYTE opcode) {
   case ADD_B_F:
     add(&Registers[REGISTER_B], &Registers[REGISTER_F]);
     break;
-    /*
-    ALL_AL_CASES(ADD_LN)
-    // src and dst are 8 bit registers in registers[]
-    SRC = AL_OP_SRC(opcode);
-    DST = AL_OP_DST(opcode);
-    buffer = (WORD)Registers[DST] + (WORD)Registers[SRC];
-
-    if ((Flags & FLAG_C) != 0) {
-      buffer++;
-    }
-    if (buffer >= 0x100) {
-      Flags = Flags | FLAG_C;
-    } else {
-      Flags = Flags & (0xFF - FLAG_C);
-    }
-    Registers[DST] = (BYTE)buffer;
-    set_flag_n(Registers[DST]);
-    set_flag_z(Registers[DST]);
-    break;
-    */
 
     ALL_AL_CASES(SUB_LN)
 
