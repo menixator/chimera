@@ -717,7 +717,7 @@ void arithmetic_shift_right(BYTE *byte) {
   }
 
   *byte >>= 1;
-  *byte |= (Registers[REGISTER_A] >> 6) << 7;
+  *byte |= (*byte >> 6) << 7;
   test(*byte);
 }
 
