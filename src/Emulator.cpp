@@ -1372,7 +1372,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case LDZ_IMM:
-    BaseRegister = ((WORD)fetch()) & ((WORD)fetch() << 8);
+    BaseRegister = ((WORD)fetch()) | ((WORD)fetch() << 8);
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
