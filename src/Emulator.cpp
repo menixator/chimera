@@ -396,6 +396,9 @@ char opcode_mneumonics[][14] = {
 #define DEZ 0x49
 #define INZ 0x4A
 
+#define DPE 0x47
+#define INP 0x48
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -610,6 +613,10 @@ void Group_1(BYTE opcode) {
   WORD buffer = 0;
 
   switch (opcode) {
+  default:
+    printf("Unimplemented opcode: %#04X\n", opcode);
+    assert(false);
+    break;
 
   // LDAA(Load Accumulator A) #
   // LDAA(Load Accumulator B) #
@@ -1451,6 +1458,20 @@ void Group_1(BYTE opcode) {
     if (BaseRegister > 0) {
       BaseRegister++;
       set_flag_z(BaseRegister);
+    }
+    break;
+
+  case DPE:
+    if (PageRegister > 0) {
+      PageRegister--;
+      set_flag_z(PageRegister);
+    }
+    break;
+
+  case INP:
+    if (PageRegister > 0) {
+      PageRegister++;
+      set_flag_z(PageRegister);
     }
     break;
   }
