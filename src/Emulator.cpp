@@ -600,8 +600,13 @@ void branch() {
   }
 }
 
-void add(BYTE *dst, BYTE *src) {
-  WORD buffer = (WORD)*src + (WORD)*src;
+void test(BYTE dst) {
+  set_flag_n(dst);
+  set_flag_z(dst);
+}
+
+void add(BYTE *dst, BYTE src) {
+  WORD buffer = (WORD)*dst + (WORD)src;
 
   if ((Flags & FLAG_C) != 0) {
     buffer++;
@@ -612,12 +617,11 @@ void add(BYTE *dst, BYTE *src) {
     Flags = Flags & (0xFF - FLAG_C);
   }
   *dst = (BYTE)buffer;
-  set_flag_n(*dst);
-  set_flag_z(*dst);
+  test(*dst);
 }
 
-void sub(BYTE *dst, BYTE *src) {
-  WORD buffer = (WORD)*dst - (WORD)*src;
+void sub(BYTE *dst, BYTE src) {
+  WORD buffer = (WORD)*dst - (WORD)src;
   if ((Flags & FLAG_C) != 0) {
     buffer--;
   }
@@ -626,39 +630,62 @@ void sub(BYTE *dst, BYTE *src) {
   } else {
     Flags = Flags & (0xFF - FLAG_C);
   }
-  set_flag_n((BYTE)buffer);
-  set_flag_z((BYTE)buffer);
   *dst = (BYTE)buffer;
+  test(*dst);
 }
 
-void cmp(BYTE *dst, BYTE *src) {
-  WORD buffer = (WORD)*dst - (WORD)*src;
+void cmp(BYTE dst, BYTE src) {
+  WORD buffer = (WORD)dst - (WORD)src;
 
   if (buffer >= 0x100) {
     Flags = Flags | FLAG_C;
   } else {
     Flags = Flags & (0xFF - FLAG_C);
   }
-  set_flag_n((BYTE)buffer);
-  set_flag_z((BYTE)buffer);
+  test((BYTE)buffer);
 }
 
-void ior(BYTE *dst, BYTE *src) {
-  *dst |= *src;
-  set_flag_n(*dst);
-  set_flag_z(*dst);
+void ior(BYTE *dst, BYTE src) {
+  *dst |= src;
+  test(*dst);
 }
 
-void bitwise_and(BYTE *dst, BYTE *src) {
-  *dst &= *src;
-  set_flag_n(*dst);
-  set_flag_z(*dst);
+void bitwise_and(BYTE *dst, BYTE src) {
+  *dst &= src;
+  test(*dst);
 }
 
-void bitwise_xor(BYTE *dst, BYTE *src) {
-  *dst ^= *src;
-  set_flag_n(*dst);
-  set_flag_z(*dst);
+void bitwise_xor(BYTE *dst, BYTE src) {
+  *dst ^= src;
+  test(*dst);
+}
+
+void decrement(BYTE *dst) {
+  *dst = *dst - 1;
+  test(*dst);
+}
+
+void increment(BYTE *dst) {
+  *dst = *dst + 1;
+  test(*dst);
+}
+
+void decrement_value_at(WORD addr) {
+  if (is_addressable(addr)) {
+    increment(&Memory[addr]);
+  }
+}
+
+void increment_value_at(WORD addr) {
+  if (is_addressable(addr)) {
+    increment(&Memory[addr]);
+  }
+}
+
+void test_value_at(WORD addr) {
+  if (is_addressable(addr)) {
+    test(Memory[addr]);
+  }
 }
 
 void call() {
@@ -823,201 +850,208 @@ void Group_1(BYTE opcode) {
     break;
 
   case ADD_A_C:
-    add(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    add(&Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case ADD_A_D:
-    add(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    add(&Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case ADD_A_E:
-    add(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    add(&Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case ADD_A_F:
-    add(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    add(&Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case ADD_B_C:
-    add(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    add(&Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case ADD_B_D:
-    add(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    add(&Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case ADD_B_E:
-    add(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    add(&Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case ADD_B_F:
-    add(&Registers[REGISTER_B], &Registers[REGISTER_F]);
+    add(&Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case SUB_A_C:
-    sub(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    sub(&Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case SUB_A_D:
-    sub(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    sub(&Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case SUB_A_E:
-    sub(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    sub(&Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case SUB_A_F:
-    sub(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    sub(&Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case SUB_B_C:
-    sub(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    sub(&Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case SUB_B_D:
-    sub(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    sub(&Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case SUB_B_E:
-    sub(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    sub(&Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case SUB_B_F:
-    sub(&Registers[REGISTER_B], &Registers[REGISTER_F]);
+    sub(&Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case CMP_A_C:
-    cmp(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    cmp(Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case CMP_A_D:
-    cmp(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    cmp(Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case CMP_A_E:
-    cmp(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    cmp(Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case CMP_A_F:
-    cmp(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    cmp(Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case CMP_B_C:
-    cmp(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    cmp(Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case CMP_B_D:
-    cmp(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    cmp(Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case CMP_B_E:
-    cmp(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    cmp(Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case CMP_B_F:
-    cmp(&Registers[REGISTER_B], &Registers[REGISTER_F]);
+    cmp(Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case IOR_A_C:
-    ior(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    ior(&Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case IOR_A_D:
-    ior(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    ior(&Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case IOR_A_E:
-    ior(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    ior(&Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case IOR_A_F:
-    ior(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    ior(&Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case IOR_B_C:
-    ior(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    ior(&Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case IOR_B_D:
-    ior(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    ior(&Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case IOR_B_E:
-    ior(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    ior(&Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case IOR_B_F:
-    ior(&Registers[REGISTER_B], &Registers[REGISTER_F]);
+    ior(&Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case AND_A_C:
-    bitwise_and(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    bitwise_and(&Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case AND_A_D:
-    bitwise_and(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    bitwise_and(&Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case AND_A_E:
-    bitwise_and(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    bitwise_and(&Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case AND_A_F:
-    bitwise_and(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    bitwise_and(&Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case AND_B_C:
-    bitwise_and(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    bitwise_and(&Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case AND_B_D:
-    bitwise_and(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    bitwise_and(&Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case AND_B_E:
-    bitwise_and(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    bitwise_and(&Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case AND_B_F:
-    bitwise_and(&Registers[REGISTER_B], &Registers[REGISTER_F]);
+    bitwise_and(&Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case XOR_A_C:
-    bitwise_xor(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    bitwise_xor(&Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case XOR_A_D:
-    bitwise_xor(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    bitwise_xor(&Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case XOR_A_E:
-    bitwise_xor(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    bitwise_xor(&Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case XOR_A_F:
-    bitwise_xor(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    bitwise_xor(&Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case XOR_B_C:
-    bitwise_xor(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    bitwise_xor(&Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case XOR_B_D:
-    bitwise_xor(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    bitwise_xor(&Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case XOR_B_E:
-    bitwise_xor(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    bitwise_xor(&Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case XOR_B_F:
-    bitwise_xor(&Registers[REGISTER_B], &Registers[REGISTER_F]);
+    bitwise_xor(&Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case CPIA:
-    data = fetch();
-    cmp(&Registers[REGISTER_A], &data);
+    cmp(Registers[REGISTER_A], fetch());
     break;
 
   case CPIB:
     data = fetch();
-    cmp(&Registers[REGISTER_B], &data);
+    cmp(Registers[REGISTER_B], fetch());
     break;
 
   case ANIA:
+    bitwise_and(&Registers[REGISTER_A], fetch());
+    break;
+
   case ANIB:
     data = fetch();
-    DST = A_OR_B(ANIA, ANIB, opcode);
-    Registers[DST] &= data;
-    set_flag_n(Registers[DST]);
-    set_flag_z(Registers[DST]);
+    bitwise_and(&Registers[REGISTER_B], fetch());
     break;
 
   case TST_ABS:
+    build_address_abs(&HB, &LB, &address);
+    test_value_at(address);
+    break;
+
   case INC_ABS:
+    build_address_abs(&HB, &LB, &address);
+    increment_value_at(address);
+    break;
+
   case DEC_ABS:
-    assert(opcode == TST_ABS || opcode == INC_ABS || opcode == DEC_ABS);
-    address = fetch();
-    if (is_addressable(address)) {
-      Memory[address] = Memory[address] +
-                        (opcode == INC_ABS ? 1 : opcode == DEC_ABS ? -1 : 0);
-      set_flag_n(Memory[address]);
-      set_flag_z(Memory[address]);
-    }
+    build_address_abs(&HB, &LB, &address);
+    decrement_value_at(address);
     break;
 
   case TSTA:
+    test(Registers[REGISTER_A]);
+    break;
   case TSTB:
+    test(Registers[REGISTER_B]);
+    break;
   case INCA:
+    increment(&Registers[REGISTER_A]);
+    break;
+
   case INCB:
+    increment(&Registers[REGISTER_B]);
+    break;
+
   case DECA:
+    decrement(&Registers[REGISTER_A]);
+    break;
+
   case DECB:
-    assert(opcode == TSTA || opcode == TSTB || opcode == INCA ||
-           opcode == INCB || opcode == DECA || opcode == DECB);
-    DST = A_OR_B(TSTA, TSTB, opcode);
-    Registers[DST] =
-        Registers[DST] +
-        (INC_ABS & LN == INC_ABS ? 1 : DEC_ABS & LN == DEC_ABS ? -1 : 0);
-    set_flag_n(Registers[DST]);
-    set_flag_z(Registers[DST]);
+    decrement(&Registers[REGISTER_B]);
     break;
 
   case JMP_ABS:
