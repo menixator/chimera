@@ -615,7 +615,7 @@ void Group_1(BYTE opcode) {
   switch (opcode) {
   default:
     printf("Unimplemented opcode: %#04X\n", opcode);
-    assert(false);
+    assert(strcmp(opcode_mneumonics[opcode], "ILLEGAL     ") == 0);
     break;
 
   // LDAA(Load Accumulator A) #
