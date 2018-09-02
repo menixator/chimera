@@ -354,6 +354,9 @@ char opcode_mneumonics[][14] = {
 #define CLC 0x56
 #define STC 0x57
 
+#define CLI 0x58
+#define SEI 0x59
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -902,7 +905,7 @@ void Group_1(BYTE opcode) {
     set_flag_z(Registers[REGISTER_B]);
     break;
 
-    // Shift Left
+  // Shift Left
   case ASL:
     BUILD_ADDRESS_ABS(HB, LB, address);
     if ((Memory[address] & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
@@ -929,7 +932,7 @@ void Group_1(BYTE opcode) {
     set_flag_z(Registers[REGISTER_B]);
     break;
 
-    // Arithmetic shift right
+  // Arithmetic shift right
   case ASR:
     BUILD_ADDRESS_ABS(HB, LB, address);
     if ((Memory[address] & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
@@ -1169,19 +1172,19 @@ void Group_1(BYTE opcode) {
       branch();
     }
     break;
-    // Call on Carry Clear
+  // Call on Carry Clear
   case CCC:
     if (((Flags & FLAG_C) == FLAG_C) == 0) {
       call();
     }
     break;
-    // Call on Carry Set
+  // Call on Carry Set
   case CCS:
     if (((Flags & FLAG_C) == FLAG_C) == 1) {
       call();
     }
     break;
-    // Call on Result Not Equal to Zero
+  // Call on Result Not Equal to Zero
   case CNE:
     if (((Flags & FLAG_Z) == FLAG_Z) == 0) {
       call();
@@ -1220,6 +1223,14 @@ void Group_1(BYTE opcode) {
 
   case STC:
     Flags |= FLAG_C;
+    break;
+
+  case CLI:
+    Flags = Flags & (0xFF - FLAG_I);
+    break;
+
+  case SEI:
+    Flags |= FLAG_I;
     break;
   }
 }
