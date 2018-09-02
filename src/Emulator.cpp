@@ -532,27 +532,28 @@ void set_flag_n(BYTE inReg) {
   }
 }
 
+void test(BYTE dst) {
+  set_flag_n(dst);
+  set_flag_z(dst);
+}
+
 void logical_shift_right(BYTE *byte) {
   if (((*byte & 0x1) == 0x1) != ((Flags & FLAG_C) == FLAG_C)) {
     Flags ^= FLAG_C;
   }
   *byte >>= 1;
-  set_flag_n(*byte);
-  set_flag_z(*byte);
+  test(*byte);
 }
 
 void negate(BYTE *byte) {
   *byte = ~*byte;
-  set_flag_n(*byte);
-  set_flag_z(*byte);
+  test(*byte);
   // TODO: CARRY? What carry?
 }
 
 void twos_complement(BYTE *byte) {
   *byte = 0 - *byte;
-
-  set_flag_n(*byte);
-  set_flag_z(*byte);
+  test(*byte);
 
   // TODO: For some reason carry isnt required?
 }
@@ -561,16 +562,14 @@ void rotate_right(BYTE *byte) {
   BYTE last_bit = (*byte & 0x1) == 0x1;
   *byte >>= 1;
   *byte |= last_bit << 7;
-  set_flag_n(*byte);
-  set_flag_z(*byte);
+  test(*byte);
 }
 
 void rotate_left(BYTE *byte) {
   BYTE first_bit = (*byte & 0x80) == 0x80;
   *byte <<= 1;
   *byte |= first_bit >> 7;
-  set_flag_n(*byte);
-  set_flag_z(*byte);
+  test(*byte);
 }
 
 void push_to_stack(BYTE reg) {
@@ -598,11 +597,6 @@ void branch() {
   if (is_addressable(ProgramCounter + offset)) {
     ProgramCounter += offset;
   }
-}
-
-void test(BYTE dst) {
-  set_flag_n(dst);
-  set_flag_z(dst);
 }
 
 void add(BYTE *dst, BYTE src) {
