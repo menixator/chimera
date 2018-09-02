@@ -357,6 +357,10 @@ char opcode_mneumonics[][14] = {
 #define CLI 0x58
 #define SEI 0x59
 
+#define CMC 0x5A
+#define NOP 0x2E
+#define WAI 0x2F
+
 #define BETWEEN(v, min, max) (((v) >= (min) && (v) <= (max)))
 
 // Helper macro to determine the destination accumulator.
@@ -1231,6 +1235,18 @@ void Group_1(BYTE opcode) {
 
   case SEI:
     Flags |= FLAG_I;
+    break;
+
+  case CMC:
+    Flags ^= FLAG_C;
+    break;
+
+  case NOP:
+    halt = true;
+    break;
+
+  case WAI:
+    halt = true;
     break;
   }
 }
