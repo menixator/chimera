@@ -546,16 +546,19 @@ void logical_shift_right(BYTE *byte) {
 }
 
 void negate(BYTE *byte) {
-  *byte = ~*byte;
+  WORD buffer = ~*byte;
+  *byte = (BYTE)buffer;
+  if (buffer >= 0x100) {
+    Flags |= FLAG_C;
+  } else {
+    Flags = (0xFF - FLAG_C);
+  }
   test(*byte);
-  // TODO: CARRY? What carry?
 }
 
 void twos_complement(BYTE *byte) {
   *byte = 0 - *byte;
   test(*byte);
-
-  // TODO: For some reason carry isnt required?
 }
 
 void rotate_right(BYTE *byte) {
@@ -704,7 +707,7 @@ void rotate_left_through_carry(BYTE *byte) {
 }
 
 void arithmetic_shift_left(BYTE *byte) {
-  if (( (*byte & 0x80) >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
+  if (((*byte & 0x80) >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
     Flags ^= FLAG_C;
   }
   *byte <<= 1;
@@ -853,7 +856,6 @@ void Group_1(BYTE opcode) {
     build_address_pag(&HB, &LB, &address);
     load_memory_from_reg(Registers[REGISTER_A], address);
     break;
-
 
   case STORA_BAS:
     build_address_bas(&HB, &LB, &address);
