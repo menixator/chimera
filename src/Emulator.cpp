@@ -704,7 +704,7 @@ void rotate_left_through_carry(BYTE *byte) {
 }
 
 void arithmetic_shift_left(BYTE *byte) {
-  if ((*byte & 0x80 >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
+  if (( (*byte & 0x80) >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
     Flags ^= FLAG_C;
   }
   *byte <<= 1;
