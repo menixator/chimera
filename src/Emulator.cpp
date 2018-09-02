@@ -1291,6 +1291,8 @@ void Group_1(BYTE opcode) {
     push_to_stack(Registers[REGISTER_D]);
     push_to_stack(Registers[REGISTER_E]);
     push_to_stack(Registers[REGISTER_F]);
+
+    Flags |= FLAG_I;
     break;
 
   case RTI:
