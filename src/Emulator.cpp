@@ -405,10 +405,12 @@ char opcode_mneumonics[][14] = {
 // If the last nibble is 0x1, it's LDAA, if the last nibble is
 // 0x2, it's LDAB
 #define LDA_DEST(opcode)                                                       \
-  (((opcode & 0xF) == 0x1) ? REGISTER_A : ((opcode & 0xF) == 0x2) ? REGISTER_B : -1)
+  (((opcode & 0xF) == 0x1) ? REGISTER_A                                        \
+                           : ((opcode & 0xF) == 0x2) ? REGISTER_B : -1)
 
 #define STOR_DEST(opcode)                                                      \
-  (((opcode & 0xF) == 0xC) ? REGISTER_A : ((opcode & 0xF) == 0xD) ? REGISTER_B : -1)
+  (((opcode & 0xF) == 0xC) ? REGISTER_A                                        \
+                           : ((opcode & 0xF) == 0xD) ? REGISTER_B : -1)
 
 #define A_OR_B(a, b, opcode)                                                   \
   opcode == a ? REGISTER_A : opcode == b ? REGISTER_B : -1;
@@ -465,7 +467,16 @@ char opcode_mneumonics[][14] = {
   case 0xC0 + low:                                                             \
   case 0xD0 + low:
 
-#define ADD_LN 0x7
+#define ADD_A_C 0x67
+#define ADD_A_D 0x77
+#define ADD_A_E 0x87
+#define ADD_A_F 0x97
+
+#define ADD_B_C 0xA7
+#define ADD_B_D 0xB7
+#define ADD_B_E 0xC7
+#define ADD_B_F 0xD7
+
 #define SUB_LN 0x8
 #define CMP_LN 0x9
 #define IOR_LN 0xA
@@ -578,6 +589,22 @@ void branch() {
   if (IS_ADDRESSABLE(ProgramCounter + offset)) {
     ProgramCounter += offset;
   }
+}
+
+void add(BYTE *dst, BYTE *src) {
+  WORD buffer = (WORD)*src + (WORD)*src;
+
+  if ((Flags & FLAG_C) != 0) {
+    buffer++;
+  }
+  if (buffer >= 0x100) {
+    Flags = Flags | FLAG_C;
+  } else {
+    Flags = Flags & (0xFF - FLAG_C);
+  }
+  *dst = (BYTE)buffer;
+  set_flag_n(*dst);
+  set_flag_z(*dst);
 }
 
 void call() {
@@ -708,11 +735,38 @@ void Group_1(BYTE opcode) {
       Memory[address] = Registers[STOR_DEST(opcode)];
     }
     break;
+
+  case ADD_A_C:
+    add(&Registers[REGISTER_A], &Registers[REGISTER_C]);
+    break;
+  case ADD_A_D:
+    add(&Registers[REGISTER_A], &Registers[REGISTER_D]);
+    break;
+  case ADD_A_E:
+    add(&Registers[REGISTER_A], &Registers[REGISTER_E]);
+    break;
+  case ADD_A_F:
+    add(&Registers[REGISTER_A], &Registers[REGISTER_F]);
+    break;
+  case ADD_B_C:
+    add(&Registers[REGISTER_B], &Registers[REGISTER_C]);
+    break;
+  case ADD_B_D:
+    add(&Registers[REGISTER_B], &Registers[REGISTER_D]);
+    break;
+  case ADD_B_E:
+    add(&Registers[REGISTER_B], &Registers[REGISTER_E]);
+    break;
+  case ADD_B_F:
+    add(&Registers[REGISTER_B], &Registers[REGISTER_F]);
+    break;
+    /*
     ALL_AL_CASES(ADD_LN)
     // src and dst are 8 bit registers in registers[]
     SRC = AL_OP_SRC(opcode);
     DST = AL_OP_DST(opcode);
     buffer = (WORD)Registers[DST] + (WORD)Registers[SRC];
+
     if ((Flags & FLAG_C) != 0) {
       buffer++;
     }
@@ -721,10 +775,11 @@ void Group_1(BYTE opcode) {
     } else {
       Flags = Flags & (0xFF - FLAG_C);
     }
-    set_flag_n((BYTE)buffer);
-    set_flag_z((BYTE)buffer);
     Registers[DST] = (BYTE)buffer;
+    set_flag_n(Registers[DST]);
+    set_flag_z(Registers[DST]);
     break;
+    */
 
     ALL_AL_CASES(SUB_LN)
 
