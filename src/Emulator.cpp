@@ -562,16 +562,16 @@ void twos_complement(BYTE *byte) {
 }
 
 void rotate_right(BYTE *byte) {
-  BYTE last_bit = (*byte & 0x1) == 0x1;
+  BYTE lsb = (*byte & 0x1) == 0x1;
   *byte >>= 1;
-  *byte |= last_bit << 7;
+  *byte |= (lsb << 7);
   test(*byte);
 }
 
 void rotate_left(BYTE *byte) {
-  BYTE first_bit = (*byte & 0x80) == 0x80;
+  BYTE msb = (*byte & 0x80) == 0x80;
   *byte <<= 1;
-  *byte |= first_bit >> 7;
+  *byte |= msb;
   test(*byte);
 }
 
