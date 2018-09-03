@@ -772,15 +772,15 @@ void arithmetic_shift_right(BYTE *byte) {
   test(*byte);
 }
 
-void call() {
-  BYTE LB = fetch();
-  BYTE HB = fetch();
-  WORD address = ((WORD)HB << 8) & ((WORD)LB);
+void call(bool condition) {
+  BYTE LB = 0;
+  BYTE HB = 0;
+  WORD address = 0;
+  build_address_abs(&HB, &LB, &address);
 
-  if (is_addressable(address)) {
-    push(ProgramCounter & 0xFF);
-    push((ProgramCounter >> 8) & 0xFF);
-    ProgramCounter = address;
+  if (is_addressable(address) && condition) {
+      pushw(ProgramCounter);
+      ProgramCounter = address;
   }
 }
 
@@ -1414,27 +1414,27 @@ void Group_1(BYTE opcode) {
     break;
   // Call on Carry Set
   case CCS:
-    branch(fcheck(FLAG_C));
+    call(fcheck(FLAG_C));
     break;
   // Call on Result Not Equal to Zero
   case CNE:
-    branch(!fcheck(FLAG_N));
+    call(!fcheck(FLAG_N));
     break;
   case CEQ:
-    branch(fcheck(FLAG_N));
+    call(fcheck(FLAG_N));
     break;
   case CMI:
-    branch(fcheck(FLAG_N));
+    call(fcheck(FLAG_N));
     break;
   case CPL:
-    branch(!fcheck(FLAG_N));
+    call(!fcheck(FLAG_N));
     break;
 
   case CHI:
-    branch(efcheck(FLAG_C|FLAG_Z));
+    call(efcheck(FLAG_C|FLAG_Z));
     break;
   case CLE:
-    branch(!efcheck(FLAG_C|FLAG_Z));
+    call(!efcheck(FLAG_C|FLAG_Z));
     break;
   case CLC:
     Flags = Flags & (0xFF - FLAG_C);
