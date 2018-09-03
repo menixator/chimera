@@ -575,25 +575,61 @@ void rotate_left(BYTE *byte) {
   test(*byte);
 }
 
-void push_to_stack(BYTE reg) {
-  if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
+void upush(BYTE reg){
     Memory[StackPointer] = reg;
     StackPointer--;
+}
+
+bool push_to_stack(BYTE reg) {
+  if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
+      upush(reg);
+      return true;
   }
+  return false;
+}
+
+
+void upop(BYTE *reg){
+    StackPointer++;
+    *reg = Memory[StackPointer];
 }
 
 void pop_from_stack(BYTE *reg) {
   if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
-    StackPointer++;
-    *reg = Memory[StackPointer];
+      upop(reg);
+      return true;
   }
+  return false;
+}
+
+bool pushw(WORD word){
+    if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
+        // Low first
+        upush(word & 0xFF);
+        // High second
+        upush((word >> 8) & 0xFF);
+        return true;
+    }
+    return false;
+}
+bool popw(WORD *word){
+    BYTE LB=0;
+    BYTE HB = 0;
+
+    if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
+        upop(&HB);
+        upop(&LB);
+      *word = ((WORD)HB << 8) + (WORD)LB;
+      return true;
+    }
+    return false;
 }
 
 void branch() {
   BYTE LB = fetch();
   WORD offset = (WORD)LB;
 
-  if (offset & 0x80) {
+  if ( (offset & 0x80) != 0) {
     offset = offset + 0xFF00;
   }
 
@@ -1106,24 +1142,13 @@ void Group_1(BYTE opcode) {
   case JR_ABS:
     build_address_abs(&HB, &LB, &address);
     // We are going to push two bytes
-    if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
-      Memory[StackPointer] = (BYTE)((ProgramCounter >> 8) & 0xFF);
-      StackPointer--;
-      Memory[StackPointer] = (BYTE)((ProgramCounter & 0xFF));
-      StackPointer--;
+    if ( pushw(ProgramCounter) ){
       ProgramCounter = address;
     }
     break;
 
   case RTS_IMP:
-    if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
-      StackPointer++;
-      LB = Memory[StackPointer];
-      StackPointer++;
-      HB = Memory[StackPointer];
-      // Set the Program Counter
-      ProgramCounter = ((WORD)HB << 8) + (WORD)LB;
-    }
+    popw(&ProgramCounter);
     break;
 
   case BRA_REL:
