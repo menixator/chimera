@@ -580,7 +580,7 @@ void upush(BYTE reg){
     StackPointer--;
 }
 
-bool push_to_stack(BYTE reg) {
+bool push(BYTE reg) {
   if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
       upush(reg);
       return true;
@@ -594,7 +594,7 @@ void upop(BYTE *reg){
     *reg = Memory[StackPointer];
 }
 
-void pop_from_stack(BYTE *reg) {
+void pop(BYTE *reg) {
   if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
       upop(reg);
       return true;
@@ -774,8 +774,8 @@ void call() {
   WORD address = ((WORD)HB << 8) & ((WORD)LB);
 
   if (is_addressable(address)) {
-    push_to_stack(ProgramCounter & 0xFF);
-    push_to_stack((ProgramCounter >> 8) & 0xFF);
+    push(ProgramCounter & 0xFF);
+    push((ProgramCounter >> 8) & 0xFF);
     ProgramCounter = address;
   }
 }
@@ -1307,55 +1307,55 @@ void Group_1(BYTE opcode) {
     break;
 
   case PUSH_A:
-    push_to_stack(Registers[REGISTER_A]);
+    push(Registers[REGISTER_A]);
     break;
 
   case PUSH_B:
-    push_to_stack(Registers[REGISTER_B]);
+    push(Registers[REGISTER_B]);
     break;
     
   case PUSH_FL:
-    push_to_stack(Flags);
+    push(Flags);
     break;
 
   case PUSH_C:
-    push_to_stack(Registers[REGISTER_C]);
+    push(Registers[REGISTER_C]);
     break;
 
   case PUSH_D:
-    push_to_stack(Registers[REGISTER_D]);
+    push(Registers[REGISTER_D]);
     break;
   case PUSH_E:
-    push_to_stack(Registers[REGISTER_E]);
+    push(Registers[REGISTER_E]);
     break;
 
   case PUSH_F:
-    push_to_stack(Registers[REGISTER_F]);
+    push(Registers[REGISTER_F]);
     break;
 
   case POP_A:
-    pop_from_stack(&Registers[REGISTER_A]);
+    pop(&Registers[REGISTER_A]);
     break;
   case POP_B:
-    pop_from_stack(&Registers[REGISTER_B]);
+    pop(&Registers[REGISTER_B]);
     break;
   case POP_FL:
-    pop_from_stack(&Flags);
+    pop(&Flags);
     break;
 
   case POP_C:
-    pop_from_stack(&Registers[REGISTER_C]);
+    pop(&Registers[REGISTER_C]);
     break;
 
   case POP_D:
-    pop_from_stack(&Registers[REGISTER_D]);
+    pop(&Registers[REGISTER_D]);
     break;
   case POP_E:
-    pop_from_stack(&Registers[REGISTER_E]);
+    pop(&Registers[REGISTER_E]);
     break;
 
   case POP_F:
-    pop_from_stack(&Registers[REGISTER_F]);
+    pop(&Registers[REGISTER_F]);
     break;
   case LX:
     Registers[REGISTER_A] = fetch();
@@ -1490,30 +1490,27 @@ void Group_1(BYTE opcode) {
     break;
 
   case SWI:
-    push_to_stack(Registers[REGISTER_A]);
-    push_to_stack(Registers[REGISTER_B]);
-    push_to_stack(ProgramCounter & 0xFF);
-    push_to_stack((ProgramCounter >> 8) & 0xFF);
-    push_to_stack(Flags);
-    push_to_stack(Registers[REGISTER_C]);
-    push_to_stack(Registers[REGISTER_D]);
-    push_to_stack(Registers[REGISTER_E]);
-    push_to_stack(Registers[REGISTER_F]);
+    push(Registers[REGISTER_A]);
+    push(Registers[REGISTER_B]);
+    pushw(ProgramCounter);
+    push(Flags);
+    push(Registers[REGISTER_C]);
+    push(Registers[REGISTER_D]);
+    push(Registers[REGISTER_E]);
+    push(Registers[REGISTER_F]);
 
     Flags |= FLAG_I;
     break;
 
   case RTI:
-    pop_from_stack(&Registers[REGISTER_F]);
-    pop_from_stack(&Registers[REGISTER_E]);
-    pop_from_stack(&Registers[REGISTER_D]);
-    pop_from_stack(&Registers[REGISTER_C]);
-    pop_from_stack(&Flags);
-    pop_from_stack(&HB);
-    pop_from_stack(&LB);
-    ProgramCounter = ((WORD)HB << 8) & ((WORD)LB);
-    pop_from_stack(&Registers[REGISTER_B]);
-    pop_from_stack(&Registers[REGISTER_A]);
+    pop(&Registers[REGISTER_F]);
+    pop(&Registers[REGISTER_E]);
+    pop(&Registers[REGISTER_D]);
+    pop(&Registers[REGISTER_C]);
+    pop(&Flags);
+    popw(&ProgramCounter);
+    pop(&Registers[REGISTER_B]);
+    pop(&Registers[REGISTER_A]);
 
     break;
 
