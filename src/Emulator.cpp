@@ -625,8 +625,11 @@ bool popw(WORD *word){
     return false;
 }
 
-void branch() {
+void branch(bool condition) {
   BYTE LB = fetch();
+
+  if (!condition) return;
+
   WORD offset = (WORD)LB;
 
   if ( (offset & 0x80) != 0) {
@@ -637,6 +640,7 @@ void branch() {
     ProgramCounter += offset;
   }
 }
+
 
 void add(BYTE *dst, BYTE src) {
   WORD buffer = (WORD)*dst + (WORD)src;
@@ -1152,7 +1156,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case BRA_REL:
-    branch();
+    branch(true);
     break;
 
   // ROTATE RIGHT THROUGH MEMORY
@@ -1374,92 +1378,63 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_F] = fetch();
     break;
   case BCC:
-    if (!fcheck(FLAG_C)){
-      branch();
-    }
+    branch(!fcheck(FLAG_C));
     break;
 
   case BCS:
-    if (fcheck(FLAG_C)){
-      branch();
-    }
+    branch(fcheck(FLAG_C));
     break;
 
   case BNE:
-    if (!fcheck(FLAG_Z)){
-      branch();
-    }
+      branch(!fcheck(FLAG_Z));
     break;
+
   case BEQ:
-    if (fcheck(FLAG_Z)){
-      branch();
-    }
+    branch(fcheck(FLAG_Z));
     break;
 
   case BMI:
-    if (fcheck(FLAG_N)){
-      branch();
-    }
+    branch(fcheck(FLAG_N));
     break;
+
   case BPL:
-    if (!fcheck(FLAG_N)){
-      branch();
-    }
+    branch(!fcheck(FLAG_N));
     break;
+
   case BLS:
-    if (efcheck(FLAG_C|FLAG_Z)){
-      branch();
-    }
+    branch(efcheck(FLAG_C|FLAG_Z));
     break;
 
   case BHI:
-    if (!efcheck(FLAG_C|FLAG_Z)){
-      branch();
-    }
+    branch(!efcheck(FLAG_C|FLAG_Z));
     break;
   // Call on Carry Clear
   case CCC:
-    if (!fcheck(FLAG_C)){
-      call();
-    }
+    branch(!fcheck(FLAG_C));
     break;
   // Call on Carry Set
   case CCS:
-    if (fcheck(FLAG_C)){
-      call();
-    }
+    branch(fcheck(FLAG_C));
     break;
   // Call on Result Not Equal to Zero
   case CNE:
-    if (!fcheck(FLAG_N)){
-      call();
-    }
+    branch(!fcheck(FLAG_N));
     break;
   case CEQ:
-    if (fcheck(FLAG_N)){
-      call();
-    }
+    branch(fcheck(FLAG_N));
     break;
   case CMI:
-    if (fcheck(FLAG_N)){
-      call();
-    }
+    branch(fcheck(FLAG_N));
     break;
   case CPL:
-    if (!fcheck(FLAG_N)){
-      call();
-    }
+    branch(!fcheck(FLAG_N));
     break;
 
   case CHI:
-    if (efcheck(FLAG_C|FLAG_Z)){
-      call();
-    }
+    branch(efcheck(FLAG_C|FLAG_Z));
     break;
   case CLE:
-    if (!efcheck(FLAG_C|FLAG_Z)){
-      call();
-    }
+    branch(!efcheck(FLAG_C|FLAG_Z));
     break;
   case CLC:
     Flags = Flags & (0xFF - FLAG_C);
