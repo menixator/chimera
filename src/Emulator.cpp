@@ -1326,6 +1326,7 @@ void Group_1(BYTE opcode) {
     break;
   case LX:
     Registers[REGISTER_A] = fetch();
+    Registers[REGISTER_B] = fetch();
     break;
   case MVR_C:
     Registers[REGISTER_C] = fetch();
