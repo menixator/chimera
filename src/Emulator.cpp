@@ -594,7 +594,7 @@ void upop(BYTE *reg){
     *reg = Memory[StackPointer];
 }
 
-void pop(BYTE *reg) {
+bool pop(BYTE *reg) {
   if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
       upop(reg);
       return true;
