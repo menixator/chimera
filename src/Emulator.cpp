@@ -831,23 +831,9 @@ void storw(WORD word, WORD address) {
 void Group_1(BYTE opcode) {
   BYTE LB = 0;
   BYTE HB = 0;
-  BYTE HN = opcode >> 4;
-  BYTE LN = opcode & 0xF;
-
-  WORD offset = 0;
 
   WORD address = 0;
   WORD data = 0;
-
-  BYTE old_carry = 0;
-
-  // Register index to transfer FROM
-  int SRC = -1;
-  // Register index to transfer TO
-  int DST = -1;
-
-  // Used for addition and such.
-  WORD buffer = 0;
 
   switch (opcode) {
   default:
