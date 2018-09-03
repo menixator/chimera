@@ -1243,8 +1243,9 @@ void Group_1(BYTE opcode) {
   case RRB:
     rotate_right(&Registers[REGISTER_B]);
     break;
+
   case LODS_IMM:
-    StackPointer = (WORD)fetch() & ((WORD)fetch() << 8);
+    StackPointer = (WORD)fetch() | ((WORD)fetch() << 8);
     break;
 
   case LODS_ABS:
@@ -1271,12 +1272,15 @@ void Group_1(BYTE opcode) {
   case TSA:
     Registers[REGISTER_A] = Flags;
     break;
+
   case PUSH_A:
     push_to_stack(Registers[REGISTER_A]);
     break;
+
   case PUSH_B:
     push_to_stack(Registers[REGISTER_B]);
     break;
+    
   case PUSH_FL:
     push_to_stack(Flags);
     break;
