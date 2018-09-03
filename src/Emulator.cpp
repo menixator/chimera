@@ -508,15 +508,20 @@ void build_address_bas(BYTE *high, BYTE *low, WORD *addr) {
 
 bool is_addressable(WORD addr) { return addr >= 0 && addr < MEMORY_SIZE; };
 
+void fset(int flag) { Flags |= flag; }
+void fclear(int flag) { Flags &= 0xFF - flag; }
+bool efcheck(int f) { return (Flags & f) != 0; }
+bool fcheck(int flag) { return ((Flags)&flag) == flag; }
+
 // Sets ZERO flag
 void set_flag_z(BYTE inReg) {
   BYTE reg;
   reg = inReg;
 
   if (reg == 0) {
-    Flags = Flags | FLAG_Z;
+    fset(FLAG_Z);
   } else {
-    Flags = Flags & (0xFF - FLAG_Z);
+    fclear(FLAG_Z);
   }
 }
 
@@ -695,10 +700,6 @@ void bitwise_xor(BYTE *dst, BYTE src) {
   *dst ^= src;
   test(*dst);
 }
-
-bool fcheck(int f) { return (Flags & f) == f; }
-
-bool efcheck(int f) { return (Flags & f) != 0; }
 
 void decrement(BYTE *dst) {
   *dst = *dst - 1;
