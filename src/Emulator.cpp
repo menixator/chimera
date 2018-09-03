@@ -657,6 +657,14 @@ void bitwise_xor(BYTE *dst, BYTE src) {
   test(*dst);
 }
 
+bool fcheck(int f){
+    return (Flags & f) == f;
+}
+
+bool efcheck(int f){
+    return (Flags & f) != 0;
+}
+
 void decrement(BYTE *dst) {
   *dst = *dst - 1;
   test(*dst);
@@ -1341,91 +1349,90 @@ void Group_1(BYTE opcode) {
     Registers[REGISTER_F] = fetch();
     break;
   case BCC:
-    if (((Flags & FLAG_C) == FLAG_C) == 0) {
+    if (!fcheck(FLAG_C)){
       branch();
     }
     break;
 
   case BCS:
-    if (((Flags & FLAG_C) == FLAG_C) == 1) {
+    if (fcheck(FLAG_C)){
       branch();
     }
     break;
 
   case BNE:
-    if (((Flags & FLAG_Z) == FLAG_Z) == 0) {
+    if (!fcheck(FLAG_Z)){
       branch();
     }
     break;
   case BEQ:
-    if (((Flags & FLAG_Z) == FLAG_Z) == 1) {
+    if (fcheck(FLAG_Z)){
       branch();
     }
     break;
 
   case BMI:
-    if (((Flags & FLAG_N) == FLAG_N) == 1) {
+    if (fcheck(FLAG_N)){
       branch();
     }
     break;
   case BPL:
-    if (((Flags & FLAG_N) == FLAG_N) == 0) {
+    if (!fcheck(FLAG_N)){
       branch();
     }
     break;
   case BLS:
-    if (((Flags & (FLAG_N | FLAG_Z))) != 0) {
+    if (efcheck(FLAG_C|FLAG_Z)){
       branch();
     }
     break;
 
   case BHI:
-    if (((Flags & (FLAG_N | FLAG_Z))) == 0) {
+    if (!efcheck(FLAG_C|FLAG_Z)){
       branch();
     }
     break;
   // Call on Carry Clear
   case CCC:
-    if (((Flags & FLAG_C) == FLAG_C) == 0) {
+    if (!fcheck(FLAG_C)){
       call();
     }
     break;
   // Call on Carry Set
   case CCS:
-    if (((Flags & FLAG_C) == FLAG_C) == 1) {
+    if (fcheck(FLAG_C)){
       call();
     }
     break;
   // Call on Result Not Equal to Zero
   case CNE:
-    if (((Flags & FLAG_Z) == FLAG_Z) == 0) {
+    if (!fcheck(FLAG_N)){
       call();
     }
     break;
   case CEQ:
-    if (((Flags & FLAG_Z) == FLAG_Z) == 1) {
+    if (fcheck(FLAG_N)){
       call();
     }
     break;
   case CMI:
-
-    if (((Flags & FLAG_N) == FLAG_N) == 1) {
+    if (fcheck(FLAG_N)){
       call();
     }
     break;
   case CPL:
-    if (((Flags & FLAG_N) == FLAG_N) == 0) {
+    if (!fcheck(FLAG_N)){
       call();
     }
     break;
 
   case CHI:
-    if (((Flags & (FLAG_N | FLAG_Z))) != 0) {
+    if (efcheck(FLAG_C|FLAG_Z)){
       call();
     }
     break;
   case CLE:
-    if (((Flags & (FLAG_N | FLAG_Z))) == 0) {
+    if (!efcheck(FLAG_C|FLAG_Z)){
       call();
     }
     break;
