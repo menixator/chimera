@@ -1410,7 +1410,7 @@ void Group_1(BYTE opcode) {
     break;
   // Call on Carry Clear
   case CCC:
-    branch(!fcheck(FLAG_C));
+    call(!fcheck(FLAG_C));
     break;
   // Call on Carry Set
   case CCS:
@@ -1418,10 +1418,10 @@ void Group_1(BYTE opcode) {
     break;
   // Call on Result Not Equal to Zero
   case CNE:
-    call(!fcheck(FLAG_N));
+    call(!fcheck(FLAG_Z));
     break;
   case CEQ:
-    call(fcheck(FLAG_N));
+    call(fcheck(FLAG_Z));
     break;
   case CMI:
     call(fcheck(FLAG_N));
