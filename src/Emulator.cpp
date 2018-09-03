@@ -575,64 +575,64 @@ void rotate_left(BYTE *byte) {
   test(*byte);
 }
 
-void upush(BYTE reg){
-    Memory[StackPointer] = reg;
-    StackPointer--;
+void upush(BYTE reg) {
+  Memory[StackPointer] = reg;
+  StackPointer--;
 }
 
 bool push(BYTE reg) {
   if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
-      upush(reg);
-      return true;
+    upush(reg);
+    return true;
   }
   return false;
 }
 
-
-void upop(BYTE *reg){
-    StackPointer++;
-    *reg = Memory[StackPointer];
+void upop(BYTE *reg) {
+  StackPointer++;
+  *reg = Memory[StackPointer];
 }
 
 bool pop(BYTE *reg) {
   if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
-      upop(reg);
-      return true;
+    upop(reg);
+    return true;
   }
   return false;
 }
 
-bool pushw(WORD word){
-    if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
-        // Low first
-        upush(word & 0xFF);
-        // High second
-        upush((word >> 8) & 0xFF);
-        return true;
-    }
-    return false;
+bool pushw(WORD word) {
+  if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
+    // Low first
+    upush(word & 0xFF);
+    // High second
+    upush((word >> 8) & 0xFF);
+    return true;
+  }
+  return false;
 }
-bool popw(WORD *word){
-    BYTE LB=0;
-    BYTE HB = 0;
+bool popw(WORD *word) {
+  BYTE LB = 0;
+  BYTE HB = 0;
 
-    if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
-        upop(&HB);
-        upop(&LB);
-      *word = ((WORD)HB << 8) + (WORD)LB;
-      return true;
-    }
-    return false;
+  if ((StackPointer >= 0) && (StackPointer < MEMORY_SIZE - 2)) {
+    upop(&HB);
+    upop(&LB);
+    *word = ((WORD)HB << 8) + (WORD)LB;
+    return true;
+  }
+  return false;
 }
 
 void branch(bool condition) {
   BYTE LB = fetch();
 
-  if (!condition) return;
+  if (!condition)
+    return;
 
   WORD offset = (WORD)LB;
 
-  if ( (offset & 0x80) != 0) {
+  if ((offset & 0x80) != 0) {
     offset = offset + 0xFF00;
   }
 
@@ -640,7 +640,6 @@ void branch(bool condition) {
     ProgramCounter += offset;
   }
 }
-
 
 void add(BYTE *dst, BYTE src) {
   WORD buffer = (WORD)*dst + (WORD)src;
@@ -697,13 +696,9 @@ void bitwise_xor(BYTE *dst, BYTE src) {
   test(*dst);
 }
 
-bool fcheck(int f){
-    return (Flags & f) == f;
-}
+bool fcheck(int f) { return (Flags & f) == f; }
 
-bool efcheck(int f){
-    return (Flags & f) != 0;
-}
+bool efcheck(int f) { return (Flags & f) != 0; }
 
 void decrement(BYTE *dst) {
   *dst = *dst - 1;
@@ -779,8 +774,8 @@ void call(bool condition) {
   build_address_abs(&HB, &LB, &address);
 
   if (is_addressable(address) && condition) {
-      pushw(ProgramCounter);
-      ProgramCounter = address;
+    pushw(ProgramCounter);
+    ProgramCounter = address;
   }
 }
 
@@ -793,6 +788,43 @@ void load_reg_from_memory(BYTE *dst, WORD address) {
 void load_memory_from_reg(BYTE dst, WORD address) {
   if (is_addressable(address)) {
     Memory[address] = dst;
+  }
+}
+
+void loadw(WORD *word, WORD address) {
+  if (address > 0 && address < MEMORY_SIZE - 2) {
+    *word = (WORD)Memory[address];
+    *word |= (((WORD)Memory[address + 1]) << 8);
+
+    if (*word < 0) {
+      Flags |= FLAG_N;
+    } else {
+      Flags &= (0xFF - FLAG_N);
+    }
+
+    if (*word == 0) {
+      Flags |= FLAG_Z;
+    } else {
+      Flags &= (0xFF - FLAG_Z);
+    }
+  }
+}
+void storw(WORD word, WORD address) {
+  if (address > 0 && address < MEMORY_SIZE - 2) {
+    Memory[address] = (BYTE)word;
+    Memory[address + 1] = (BYTE)word >> 8;
+
+    if (word < 0) {
+      Flags |= FLAG_N;
+    } else {
+      Flags &= (0xFF - FLAG_N);
+    }
+
+    if (word == 0) {
+      Flags |= FLAG_Z;
+    } else {
+      Flags &= (0xFF - FLAG_Z);
+    }
   }
 }
 
@@ -1146,7 +1178,7 @@ void Group_1(BYTE opcode) {
   case JR_ABS:
     build_address_abs(&HB, &LB, &address);
     // We are going to push two bytes
-    if ( pushw(ProgramCounter) ){
+    if (pushw(ProgramCounter)) {
       ProgramCounter = address;
     }
     break;
@@ -1317,7 +1349,7 @@ void Group_1(BYTE opcode) {
   case PUSH_B:
     push(Registers[REGISTER_B]);
     break;
-    
+
   case PUSH_FL:
     push(Flags);
     break;
@@ -1386,7 +1418,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case BNE:
-      branch(!fcheck(FLAG_Z));
+    branch(!fcheck(FLAG_Z));
     break;
 
   case BEQ:
@@ -1402,11 +1434,11 @@ void Group_1(BYTE opcode) {
     break;
 
   case BLS:
-    branch(efcheck(FLAG_C|FLAG_Z));
+    branch(efcheck(FLAG_C | FLAG_Z));
     break;
 
   case BHI:
-    branch(!efcheck(FLAG_C|FLAG_Z));
+    branch(!efcheck(FLAG_C | FLAG_Z));
     break;
   // Call on Carry Clear
   case CCC:
@@ -1431,10 +1463,10 @@ void Group_1(BYTE opcode) {
     break;
 
   case CHI:
-    call(efcheck(FLAG_C|FLAG_Z));
+    call(efcheck(FLAG_C | FLAG_Z));
     break;
   case CLE:
-    call(!efcheck(FLAG_C|FLAG_Z));
+    call(!efcheck(FLAG_C | FLAG_Z));
     break;
   case CLC:
     Flags = Flags & (0xFF - FLAG_C);
@@ -1581,40 +1613,27 @@ void Group_1(BYTE opcode) {
     set_flag_n(BaseRegister);
     set_flag_z(BaseRegister);
     break;
+
   case STZ_ABS:
     build_address_abs(&HB, &LB, &address);
-    Memory[address] = (BYTE)BaseRegister;
-    Memory[address + 1] = (BYTE)BaseRegister >> 8;
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    storw(BaseRegister, address);
     break;
+
   case STZ_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    Memory[address] = (BYTE)BaseRegister;
-    Memory[address + 1] = (BYTE)BaseRegister >> 8;
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    storw(BaseRegister, address);
     break;
   case STZ_IND:
     build_address_ind(&HB, &LB, &address);
-    Memory[address] = (BYTE)BaseRegister;
-    Memory[address + 1] = (BYTE)BaseRegister >> 8;
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    storw(BaseRegister, address);
     break;
   case STZ_PAG:
     build_address_pag(&HB, &LB, &address);
-    Memory[address] = (BYTE)BaseRegister;
-    Memory[address + 1] = (BYTE)BaseRegister >> 8;
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    storw(BaseRegister, address);
     break;
   case STZ_BAS:
     build_address_bas(&HB, &LB, &address);
-    Memory[address] = (BYTE)BaseRegister;
-    Memory[address + 1] = (BYTE)BaseRegister >> 8;
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    storw(BaseRegister, address);
     break;
 
   case DEZ:
