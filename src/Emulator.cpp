@@ -1237,12 +1237,10 @@ void Group_1(BYTE opcode) {
     break;
 
   case RRA:
-    build_address_abs(&HB, &LB, &address);
     rotate_right(&Registers[REGISTER_A]);
     break;
 
   case RRB:
-    build_address_abs(&HB, &LB, &address);
     rotate_right(&Registers[REGISTER_B]);
     break;
   case LODS_IMM:
