@@ -485,7 +485,6 @@ void fclear(int flag) { Flags &= 0xFF - flag; }
 bool efcheck(int flag) { return (Flags & flag) != 0; }
 bool fcheck(int flag) { return (Flags & flag) == flag; }
 
-
 bool msbset(BYTE byte) { return (byte & MSB) == MSB; }
 bool lsbset(BYTE byte) { return (byte & LSB) == LSB; }
 
@@ -521,7 +520,6 @@ void build_address_bas(BYTE *high, BYTE *low, WORD *addr) {
 }
 
 bool is_addressable(WORD addr) { return addr >= 0 && addr < MEMORY_SIZE; };
-
 
 // Sets ZERO flag
 void ztest(BYTE byte) {
