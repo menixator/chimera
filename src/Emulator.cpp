@@ -814,7 +814,7 @@ void loadw(WORD *word, WORD address) {
     testw(*word);
   }
 }
-void storw(WORD word, WORD address) {
+void storew(WORD word, WORD address) {
   if (address > 0 && address < MEMORY_SIZE - 2) {
     Memory[address] = (BYTE)word;
     Memory[address + 1] = (BYTE)word >> 8;
@@ -1606,24 +1606,24 @@ void Group_1(BYTE opcode) {
 
   case STZ_ABS:
     build_address_abs(&HB, &LB, &address);
-    storw(BaseRegister, address);
+    storew(BaseRegister, address);
     break;
 
   case STZ_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    storw(BaseRegister, address);
+    storew(BaseRegister, address);
     break;
   case STZ_IND:
     build_address_ind(&HB, &LB, &address);
-    storw(BaseRegister, address);
+    storew(BaseRegister, address);
     break;
   case STZ_PAG:
     build_address_pag(&HB, &LB, &address);
-    storw(BaseRegister, address);
+    storew(BaseRegister, address);
     break;
   case STZ_BAS:
     build_address_bas(&HB, &LB, &address);
-    storw(BaseRegister, address);
+    storew(BaseRegister, address);
     break;
 
   case DEZ:
