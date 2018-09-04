@@ -512,7 +512,7 @@ void build_address_zpg(BYTE *high, BYTE *low, WORD *addr) {
 
 void build_address_bas(BYTE *high, BYTE *low, WORD *addr) {
   *low = fetch();
-  if (msbset(*byte)) {
+  if (msbset(*low)) {
     *addr += BaseRegister + (0x00 - *low);
   } else {
     *addr += BaseRegister + *low;
