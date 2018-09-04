@@ -498,6 +498,7 @@ void build_address_ind(BYTE *high, BYTE *low, WORD *addr) {
   build_address_abs(high, low, addr);
   *low = Memory[*addr];
   *high = Memory[*addr + 1];
+  *addr = (WORD)((WORD)*high << 8) + *low;
 }
 
 void build_address_pag(BYTE *high, BYTE *low, WORD *addr) {
@@ -807,7 +808,7 @@ void store(BYTE dst, WORD address) {
 }
 
 void loadw(WORD *word, WORD address) {
-  if (address > 0 && address < MEMORY_SIZE - 2) {
+  if (address >= 0 && address <= MEMORY_SIZE - 2) {
     *word = (WORD)Memory[address];
     *word |= (((WORD)Memory[address + 1]) << 8);
 
@@ -815,7 +816,7 @@ void loadw(WORD *word, WORD address) {
   }
 }
 void storew(WORD word, WORD address) {
-  if (address > 0 && address < MEMORY_SIZE - 2) {
+  if (address >= 0 && address <= MEMORY_SIZE - 2) {
     Memory[address] = (BYTE)word;
     Memory[address + 1] = (BYTE)word >> 8;
     ntestw(word);
