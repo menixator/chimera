@@ -509,42 +509,71 @@ void build_address_bas(BYTE *high, BYTE *low, WORD *addr) {
 bool is_addressable(WORD addr) { return addr >= 0 && addr < MEMORY_SIZE; };
 
 void fset(int flag) { Flags |= flag; }
+void ftoggle(int flag) { Flags ^= flag; }
 void fclear(int flag) { Flags &= 0xFF - flag; }
-bool efcheck(int f) { return (Flags & f) != 0; }
-bool fcheck(int flag) { return ((Flags)&flag) == flag; }
+bool efcheck(int flag) { return (Flags & flag) != 0; }
+bool fcheck(int flag) { return (Flags & flag) == flag; }
+
+#define MSB 0x80
+#define LSB 0x1
+#define BYTE_MAX 0xFF
+
+bool msbset(BYTE byte) { return (byte & MSB) == MSB; }
+bool lsbset(BYTE byte) { return (byte & LSB) == LSB; }
 
 // Sets ZERO flag
-void set_flag_z(BYTE inReg) {
-  BYTE reg;
-  reg = inReg;
-
-  if (reg == 0) {
+void ztest(BYTE byte) {
+  if (byte == 0) {
     fset(FLAG_Z);
   } else {
     fclear(FLAG_Z);
   }
 }
 
-void set_flag_n(BYTE inReg) {
-  BYTE reg;
-  reg = inReg;
-
-  if ((reg & 0x80) != 0) // msbit set
-  {
-    Flags = Flags | FLAG_N;
+void ntest(BYTE byte) {
+  if (msbset(byte)) {
+    fset(FLAG_N);
   } else {
-    Flags = Flags & (0xFF - FLAG_N);
+    fclear(FLAG_N);
   }
 }
 
+void ntestw(WORD word) {
+  if (word < 0) {
+    Flags |= FLAG_N;
+  } else {
+    Flags &= (0xFF - FLAG_N);
+  }
+}
+
+void ztestw(WORD word) {
+  if (word == 0) {
+    Flags |= FLAG_Z;
+  } else {
+    Flags &= (0xFF - FLAG_Z);
+  }
+}
+
+void ctest(WORD word) {
+  if (word > BYTE_MAX) {
+    fset(FLAG_C);
+  } else {
+    fclear(FLAG_C);
+  }
+}
+
+void testw(WORD word) {
+  ntestw(word);
+  ztestw(word);
+}
 void test(BYTE dst) {
-  set_flag_n(dst);
-  set_flag_z(dst);
+  ntest(dst);
+  ztest(dst);
 }
 
 void logical_shift_right(BYTE *byte) {
-  if (((*byte & 0x1) == 0x1) != ((Flags & FLAG_C) == FLAG_C)) {
-    Flags ^= FLAG_C;
+  if (lsbset(*byte) != fcheck(FLAG_C)) {
+    ftoggle(FLAG_C);
   }
   *byte >>= 1;
   test(*byte);
@@ -553,11 +582,7 @@ void logical_shift_right(BYTE *byte) {
 void negate(BYTE *byte) {
   WORD buffer = ~*byte;
   *byte = (BYTE)buffer;
-  if (buffer >= 0x100) {
-    Flags |= FLAG_C;
-  } else {
-    Flags = (0xFF - FLAG_C);
-  }
+  ctest(buffer);
   test(*byte);
 }
 
@@ -567,14 +592,14 @@ void twos_complement(BYTE *byte) {
 }
 
 void rotate_right(BYTE *byte) {
-  BYTE lsb = (*byte & 0x1) == 0x1;
+  BYTE lsb = (*byte & LSB) == LSB;
   *byte >>= 1;
   *byte |= (lsb << 7);
   test(*byte);
 }
 
 void rotate_left(BYTE *byte) {
-  BYTE msb = (*byte & 0x80) == 0x80;
+  BYTE msb = (*byte & MSB) == MSB;
   *byte <<= 1;
   *byte |= msb;
   test(*byte);
@@ -609,9 +634,9 @@ bool pop(BYTE *reg) {
 bool pushw(WORD word) {
   if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
     // Low first
-    upush(word & 0xFF);
+    upush(word & BYTE_MAX);
     // High second
-    upush((word >> 8) & 0xFF);
+    upush((word >> 8) & BYTE_MAX);
     return true;
   }
   return false;
@@ -637,7 +662,7 @@ void branch(bool condition) {
 
   WORD offset = (WORD)LB;
 
-  if ((offset & 0x80) != 0) {
+  if ((offset & MSB) != 0) {
     offset = offset + 0xFF00;
   }
 
@@ -652,11 +677,8 @@ void add(BYTE *dst, BYTE src) {
   if ((Flags & FLAG_C) != 0) {
     buffer++;
   }
-  if (buffer >= 0x100) {
-    Flags = Flags | FLAG_C;
-  } else {
-    Flags = Flags & (0xFF - FLAG_C);
-  }
+
+  ctest(buffer);
   *dst = (BYTE)buffer;
   test(*dst);
 }
@@ -666,11 +688,7 @@ void sub(BYTE *dst, BYTE src) {
   if ((Flags & FLAG_C) != 0) {
     buffer--;
   }
-  if (buffer >= 0x100) {
-    Flags = Flags | FLAG_C;
-  } else {
-    Flags = Flags & (0xFF - FLAG_C);
-  }
+  ctest(buffer);
   *dst = (BYTE)buffer;
   test(*dst);
 }
@@ -678,11 +696,7 @@ void sub(BYTE *dst, BYTE src) {
 void cmp(BYTE dst, BYTE src) {
   WORD buffer = (WORD)dst - (WORD)src;
 
-  if (buffer >= 0x100) {
-    Flags = Flags | FLAG_C;
-  } else {
-    Flags = Flags & (0xFF - FLAG_C);
-  }
+  ctest(buffer);
   test((BYTE)buffer);
 }
 
@@ -730,9 +744,9 @@ void test_value_at(WORD addr) {
 }
 
 void rotate_right_through_carry(BYTE *byte) {
-  BYTE old_carry = (Flags & FLAG_C) == FLAG_C;
-  if ((*byte & 0x1) != old_carry) {
-    Flags ^= FLAG_C;
+  BYTE old_carry = fcheck(FLAG_C);
+  if ((*byte & LSB) != old_carry) {
+    ftoggle(FLAG_C);
   }
   *byte >>= 1;
   *byte |= old_carry << 7;
@@ -740,10 +754,10 @@ void rotate_right_through_carry(BYTE *byte) {
 }
 
 void rotate_left_through_carry(BYTE *byte) {
-  BYTE old_carry = (Flags & FLAG_C) == FLAG_C;
+  BYTE old_carry = fcheck(FLAG_C);
 
-  if ((*byte & 0x80) >> 7 != old_carry) {
-    Flags ^= FLAG_C;
+  if ((*byte & MSB) >> 7 != old_carry) {
+    ftoggle(FLAG_C);
   }
   *byte <<= 1;
   *byte |= old_carry;
@@ -751,16 +765,16 @@ void rotate_left_through_carry(BYTE *byte) {
 }
 
 void arithmetic_shift_left(BYTE *byte) {
-  if (((*byte & 0x80) >> 7) != ((Flags & FLAG_C) == FLAG_C)) {
-    Flags ^= FLAG_C;
+  if (((*byte & MSB) >> 7) != fcheck(FLAG_C)) {
+    ftoggle(FLAG_C);
   }
   *byte <<= 1;
   test(*byte);
 }
 
 void arithmetic_shift_right(BYTE *byte) {
-  if ((*byte & 0x01) != ((Flags & FLAG_C) == FLAG_C)) {
-    Flags ^= FLAG_C;
+  if ((*byte & LSB) != fcheck(FLAG_C)) {
+    ftoggle(FLAG_C);
   }
 
   *byte >>= 1;
@@ -780,13 +794,13 @@ void call(bool condition) {
   }
 }
 
-void load_reg_from_memory(BYTE *dst, WORD address) {
+void load(BYTE *dst, WORD address) {
   if (is_addressable(address)) {
     *dst = Memory[address];
   }
 }
 
-void load_memory_from_reg(BYTE dst, WORD address) {
+void store(BYTE dst, WORD address) {
   if (is_addressable(address)) {
     Memory[address] = dst;
   }
@@ -797,17 +811,7 @@ void loadw(WORD *word, WORD address) {
     *word = (WORD)Memory[address];
     *word |= (((WORD)Memory[address + 1]) << 8);
 
-    if (*word < 0) {
-      Flags |= FLAG_N;
-    } else {
-      Flags &= (0xFF - FLAG_N);
-    }
-
-    if (*word == 0) {
-      Flags |= FLAG_Z;
-    } else {
-      Flags &= (0xFF - FLAG_Z);
-    }
+    testw(*word);
   }
 }
 void storw(WORD word, WORD address) {
@@ -816,15 +820,15 @@ void storw(WORD word, WORD address) {
     Memory[address + 1] = (BYTE)word >> 8;
 
     if (word < 0) {
-      Flags |= FLAG_N;
+      fset(FLAG_N);
     } else {
-      Flags &= (0xFF - FLAG_N);
+      fclear(FLAG_N);
     }
 
     if (word == 0) {
-      Flags |= FLAG_Z;
+      fset(FLAG_Z);
     } else {
-      Flags &= (0xFF - FLAG_Z);
+      fclear(FLAG_Z);
     }
   }
 }
@@ -850,27 +854,26 @@ void Group_1(BYTE opcode) {
   // LDAA(Load Accumulator A) abs
   case LDAA_ABS:
     build_address_abs(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_A], address);
-    break;
+    load(&Registers[REGISTER_A], address);
     break;
 
   case LDAA_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_A], address);
+    load(&Registers[REGISTER_A], address);
     break;
 
   case LDAA_IND:
     build_address_ind(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_A], address);
+    load(&Registers[REGISTER_A], address);
     break;
 
   case LDAA_PAG:
     build_address_pag(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_A], address);
+    load(&Registers[REGISTER_A], address);
     break;
   case LDAA_BAS:
     build_address_bas(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_A], address);
+    load(&Registers[REGISTER_A], address);
     break;
 
   // LDAB(Load Accumulator B) abs
@@ -881,77 +884,77 @@ void Group_1(BYTE opcode) {
 
   case LDAB_ABS:
     build_address_abs(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_B], address);
+    load(&Registers[REGISTER_B], address);
     break;
 
   case LDAB_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_B], address);
+    load(&Registers[REGISTER_B], address);
     break;
 
   case LDAB_IND:
     build_address_ind(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_B], address);
+    load(&Registers[REGISTER_B], address);
     break;
 
   case LDAB_PAG:
     build_address_pag(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_B], address);
+    load(&Registers[REGISTER_B], address);
     break;
 
   case LDAB_BAS:
     build_address_bas(&HB, &LB, &address);
-    load_reg_from_memory(&Registers[REGISTER_B], address);
+    load(&Registers[REGISTER_B], address);
     break;
 
   case STORA_ABS:
     build_address_abs(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_A], address);
+    store(Registers[REGISTER_A], address);
     break;
 
   case STORA_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_A], address);
+    store(Registers[REGISTER_A], address);
     break;
 
   case STORA_IND:
     build_address_ind(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_A], address);
+    store(Registers[REGISTER_A], address);
     break;
 
   case STORA_PAG:
     build_address_pag(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_A], address);
+    store(Registers[REGISTER_A], address);
     break;
 
   case STORA_BAS:
     build_address_bas(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_A], address);
+    store(Registers[REGISTER_A], address);
     break;
 
   case STORB_ABS:
     build_address_abs(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_B], address);
+    store(Registers[REGISTER_B], address);
     break;
 
   case STORB_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_B], address);
+    store(Registers[REGISTER_B], address);
     break;
 
   case STORB_IND:
     build_address_ind(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_B], address);
+    store(Registers[REGISTER_B], address);
     break;
 
   case STORB_PAG:
     build_address_pag(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_B], address);
+    store(Registers[REGISTER_B], address);
     break;
 
   case STORB_BAS:
     build_address_bas(&HB, &LB, &address);
-    load_memory_from_reg(Registers[REGISTER_B], address);
+    store(Registers[REGISTER_B], address);
     break;
 
   case ADD_A_C:
@@ -1456,23 +1459,23 @@ void Group_1(BYTE opcode) {
     call(!efcheck(FLAG_C | FLAG_Z));
     break;
   case CLC:
-    Flags = Flags & (0xFF - FLAG_C);
+    fclear(FLAG_C);
     break;
 
   case STC:
-    Flags |= FLAG_C;
+    fset(FLAG_C);
     break;
 
   case CLI:
-    Flags = Flags & (0xFF - FLAG_I);
+    fclear(FLAG_I);
     break;
 
   case SEI:
-    Flags |= FLAG_I;
+    fset(FLAG_I);
     break;
 
   case CMC:
-    Flags ^= FLAG_C;
+    ftoggle(FLAG_C);
     break;
 
   case NOP:
@@ -1562,43 +1565,27 @@ void Group_1(BYTE opcode) {
 
   case LDZ_IMM:
     BaseRegister = ((WORD)fetch()) | ((WORD)fetch() << 8);
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    testw(BaseRegister);
     break;
   case LDZ_ABS:
     build_address_abs(&HB, &LB, &address);
-    BaseRegister = (WORD)Memory[address];
-    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    loadw(&BaseRegister, address);
     break;
   case LDZ_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    BaseRegister = (WORD)Memory[address];
-    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    loadw(&BaseRegister, address);
     break;
   case LDZ_IND:
     build_address_ind(&HB, &LB, &address);
-    BaseRegister = (WORD)Memory[address];
-    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    loadw(&BaseRegister, address);
     break;
   case LDZ_PAG:
     build_address_pag(&HB, &LB, &address);
-    BaseRegister = (WORD)Memory[address];
-    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    loadw(&BaseRegister, address);
     break;
   case LDZ_BAS:
     build_address_bas(&HB, &LB, &address);
-    BaseRegister = (WORD)Memory[address];
-    BaseRegister |= (((WORD)Memory[address + 1]) << 8);
-    set_flag_n(BaseRegister);
-    set_flag_z(BaseRegister);
+    loadw(&BaseRegister, address);
     break;
 
   case STZ_ABS:
@@ -1626,28 +1613,28 @@ void Group_1(BYTE opcode) {
   case DEZ:
     if (BaseRegister > 0) {
       BaseRegister--;
-      set_flag_z(BaseRegister);
+      ztestw(BaseRegister);
     }
     break;
 
   case INZ:
     if (BaseRegister > 0) {
       BaseRegister++;
-      set_flag_z(BaseRegister);
+      ztestw(BaseRegister);
     }
     break;
 
   case DPE:
     if (PageRegister > 0) {
       PageRegister--;
-      set_flag_z(PageRegister);
+      ztest(PageRegister);
     }
     break;
 
   case INP:
     if (PageRegister > 0) {
       PageRegister++;
-      set_flag_z(PageRegister);
+      ztest(PageRegister);
     }
     break;
   }
