@@ -1215,7 +1215,9 @@ void Group_1(BYTE opcode) {
   // Shift Left
   case ASL:
     build_address_abs(&HB, &LB, &address);
-    arithmetic_shift_left(&Memory[address]);
+    if (is_addressable(address)) {
+      arithmetic_shift_left(&Memory[address]);
+    }
     break;
   case ASLA:
     arithmetic_shift_left(&Registers[REGISTER_A]);
@@ -1227,7 +1229,9 @@ void Group_1(BYTE opcode) {
   // Arithmetic shift right
   case ASR:
     build_address_abs(&HB, &LB, &address);
-    arithmetic_shift_right(&Memory[address]);
+    if (is_addressable(address)) {
+      arithmetic_shift_right(&Memory[address]);
+    }
     break;
 
   case ASRA:
@@ -1240,7 +1244,9 @@ void Group_1(BYTE opcode) {
 
   case LSR:
     build_address_abs(&HB, &LB, &address);
-    logical_shift_right(&Memory[address]);
+    if (is_addressable(address)) {
+      logical_shift_right(&Memory[address]);
+    }
     break;
 
   case LSRA:
@@ -1253,7 +1259,9 @@ void Group_1(BYTE opcode) {
 
   case NOT:
     build_address_abs(&HB, &LB, &address);
-    negate(&Memory[address]);
+    if (is_addressable(address)) {
+      negate(&Memory[address]);
+    }
     break;
 
   case NOTA:
@@ -1266,7 +1274,9 @@ void Group_1(BYTE opcode) {
 
   case NEG:
     build_address_abs(&HB, &LB, &address);
-    twos_complement(&Memory[address]);
+    if (is_addressable(address)) {
+      twos_complement(&Memory[address]);
+    }
     break;
 
   case NEGA:
@@ -1279,7 +1289,9 @@ void Group_1(BYTE opcode) {
 
   case RL:
     build_address_abs(&HB, &LB, &address);
-    rotate_left(&Memory[address]);
+    if (is_addressable(address)) {
+      rotate_left(&Memory[address]);
+    }
     break;
 
   case RLA:
@@ -1292,7 +1304,9 @@ void Group_1(BYTE opcode) {
 
   case RR:
     build_address_abs(&HB, &LB, &address);
-    rotate_right(&Memory[address]);
+    if (is_addressable(address)) {
+      rotate_right(&Memory[address]);
+    }
     break;
 
   case RRA:
@@ -1516,43 +1530,45 @@ void Group_1(BYTE opcode) {
     break;
   case LDP_ABS:
     build_address_abs(&HB, &LB, &address);
-    PageRegister = Memory[address];
+    load(&PageRegister, address);
     break;
   case LDP_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    PageRegister = Memory[address];
+    load(&PageRegister, address);
     break;
   case LDP_IND:
     build_address_ind(&HB, &LB, &address);
-    PageRegister = Memory[address];
+    load(&PageRegister, address);
     break;
   case LDP_PAG:
     build_address_pag(&HB, &LB, &address);
-    PageRegister = Memory[address];
+    load(&PageRegister, address);
     break;
   case LDP_BAS:
     build_address_bas(&HB, &LB, &address);
-    PageRegister = Memory[address];
+    load(&PageRegister, address);
     break;
+
   case STP_ABS:
     build_address_abs(&HB, &LB, &address);
-    Memory[address] = PageRegister;
+    store(PageRegister, address);
     break;
   case STP_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    Memory[address] = PageRegister;
+    store(PageRegister, address);
     break;
   case STP_IND:
     build_address_ind(&HB, &LB, &address);
-    Memory[address] = PageRegister;
+    store(PageRegister, address);
+    break;
     break;
   case STP_PAG:
     build_address_pag(&HB, &LB, &address);
-    Memory[address] = PageRegister;
+    store(PageRegister, address);
     break;
   case STP_BAS:
     build_address_bas(&HB, &LB, &address);
-    Memory[address] = PageRegister;
+    store(PageRegister, address);
     break;
 
   case TAP:
