@@ -244,15 +244,15 @@ char opcode_mneumonics[][14] = {
 #define STORB_PAG 0x4D
 #define STORB_BAS 0x5D
 
-#define TST_ABS 0x10
+#define TST 0x10
 #define TSTA 0x20
 #define TSTB 0x30
 
-#define INC_ABS 0x11
+#define INC 0x11
 #define INCA 0x21
 #define INCB 0x31
 
-#define DEC_ABS 0x12
+#define DEC 0x12
 #define DECA 0x22
 #define DECB 0x32
 
@@ -261,18 +261,18 @@ char opcode_mneumonics[][14] = {
 #define ANIA 0xFE
 #define ANIB 0xFF
 
-#define JMP_ABS 0x6D
-#define JR_ABS 0x00
-#define RTS_IMP 0x86
-#define BRA_REL 0xE7
+#define JMP 0x6D
+#define JR 0x00
+#define RTS 0x86
+#define BRA 0xE7
 
 #define RCR 0x13
-#define RCRA_IMP 0x23
-#define RCRB_IMP 0x33
+#define RCRA 0x23
+#define RCRB 0x33
 
 #define RLC 0x14
-#define RLCA_IMP 0x24
-#define RLCB_IMP 0x34
+#define RLCA 0x24
+#define RLCB 0x34
 
 #define ASL 0x15
 #define ASLA 0x25
@@ -1123,17 +1123,17 @@ void Group_1(BYTE opcode) {
     bitwise_and(&Registers[REGISTER_B], fetch());
     break;
 
-  case TST_ABS:
+  case TST:
     build_address_abs(&HB, &LB, &address);
     test_value_at(address);
     break;
 
-  case INC_ABS:
+  case INC:
     build_address_abs(&HB, &LB, &address);
     increment_value_at(address);
     break;
 
-  case DEC_ABS:
+  case DEC:
     build_address_abs(&HB, &LB, &address);
     decrement_value_at(address);
     break;
@@ -1160,12 +1160,12 @@ void Group_1(BYTE opcode) {
     decrement(&Registers[REGISTER_B]);
     break;
 
-  case JMP_ABS:
+  case JMP:
     build_address_abs(&HB, &LB, &address);
     ProgramCounter = address;
     break;
 
-  case JR_ABS:
+  case JR:
     build_address_abs(&HB, &LB, &address);
     // We are going to push two bytes
     if (pushw(ProgramCounter)) {
@@ -1173,11 +1173,11 @@ void Group_1(BYTE opcode) {
     }
     break;
 
-  case RTS_IMP:
+  case RTS:
     popw(&ProgramCounter);
     break;
 
-  case BRA_REL:
+  case BRA:
     branch(true);
     break;
 
@@ -1189,11 +1189,11 @@ void Group_1(BYTE opcode) {
     }
     break;
 
-  case RCRA_IMP:
+  case RCRA:
     rotate_right_through_carry(&Registers[REGISTER_A]);
     break;
 
-  case RCRB_IMP:
+  case RCRB:
     rotate_right_through_carry(&Registers[REGISTER_B]);
     break;
 
@@ -1204,11 +1204,11 @@ void Group_1(BYTE opcode) {
     }
     break;
 
-  case RLCA_IMP:
+  case RLCA:
     rotate_left_through_carry(&Registers[REGISTER_A]);
     break;
 
-  case RLCB_IMP:
+  case RLCB:
     rotate_left_through_carry(&Registers[REGISTER_B]);
     break;
 
