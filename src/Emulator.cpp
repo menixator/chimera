@@ -475,6 +475,20 @@ BYTE fetch() {
   return byte;
 }
 
+#define MSB 0x80
+#define LSB 0x01
+#define BYTE_MAX 0xFF
+
+void fset(int flag) { Flags |= flag; }
+void ftoggle(int flag) { Flags ^= flag; }
+void fclear(int flag) { Flags &= 0xFF - flag; }
+bool efcheck(int flag) { return (Flags & flag) != 0; }
+bool fcheck(int flag) { return (Flags & flag) == flag; }
+
+
+bool msbset(BYTE byte) { return (byte & MSB) == MSB; }
+bool lsbset(BYTE byte) { return (byte & LSB) == LSB; }
+
 void build_address_abs(BYTE *high, BYTE *low, WORD *addr) {
   *low = fetch();
   *high = fetch();
@@ -499,7 +513,7 @@ void build_address_zpg(BYTE *high, BYTE *low, WORD *addr) {
 
 void build_address_bas(BYTE *high, BYTE *low, WORD *addr) {
   *low = fetch();
-  if ((*low & 0x80) == 0x80) {
+  if (msbset(*byte)) {
     *addr += BaseRegister + (0x00 - *low);
   } else {
     *addr += BaseRegister + *low;
@@ -508,18 +522,6 @@ void build_address_bas(BYTE *high, BYTE *low, WORD *addr) {
 
 bool is_addressable(WORD addr) { return addr >= 0 && addr < MEMORY_SIZE; };
 
-void fset(int flag) { Flags |= flag; }
-void ftoggle(int flag) { Flags ^= flag; }
-void fclear(int flag) { Flags &= 0xFF - flag; }
-bool efcheck(int flag) { return (Flags & flag) != 0; }
-bool fcheck(int flag) { return (Flags & flag) == flag; }
-
-#define MSB 0x80
-#define LSB 0x1
-#define BYTE_MAX 0xFF
-
-bool msbset(BYTE byte) { return (byte & MSB) == MSB; }
-bool lsbset(BYTE byte) { return (byte & LSB) == LSB; }
 
 // Sets ZERO flag
 void ztest(BYTE byte) {
@@ -542,7 +544,7 @@ void ntestw(WORD word) {
   if (word < 0) {
     Flags |= FLAG_N;
   } else {
-    Flags &= (0xFF - FLAG_N);
+    Flags &= (BYTE_MAX - FLAG_N);
   }
 }
 
@@ -550,7 +552,7 @@ void ztestw(WORD word) {
   if (word == 0) {
     Flags |= FLAG_Z;
   } else {
-    Flags &= (0xFF - FLAG_Z);
+    Flags &= (BYTE_MAX - FLAG_Z);
   }
 }
 
