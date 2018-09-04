@@ -818,18 +818,8 @@ void storew(WORD word, WORD address) {
   if (address > 0 && address < MEMORY_SIZE - 2) {
     Memory[address] = (BYTE)word;
     Memory[address + 1] = (BYTE)word >> 8;
-
-    if (word < 0) {
-      fset(FLAG_N);
-    } else {
-      fclear(FLAG_N);
-    }
-
-    if (word == 0) {
-      fset(FLAG_Z);
-    } else {
-      fclear(FLAG_Z);
-    }
+    ntestw(word);
+    ztestw(word);
   }
 }
 
