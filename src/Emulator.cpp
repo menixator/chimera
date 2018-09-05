@@ -830,7 +830,6 @@ void Group_1(BYTE opcode) {
   BYTE HB = 0;
 
   WORD address = 0;
-  WORD data = 0;
 
   switch (opcode) {
   default:
