@@ -786,7 +786,7 @@ void call(bool condition) {
 
 void iload(BYTE *byte) { *byte = fetch(); }
 
-void iloadw(WORD *word) { *word += ((WORD)fetch()) + ((WORD)fetch() << 8); }
+void iloadw(WORD *word) { *word = ((WORD)fetch()) + ((WORD)fetch() << 8); }
 
 void ialoadw(WORD *word) {
   WORD address = ((WORD)fetch()) + ((WORD)fetch() << 8);
