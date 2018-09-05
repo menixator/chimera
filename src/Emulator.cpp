@@ -555,7 +555,7 @@ void ztestw(WORD word) {
   }
 }
 
-void ctest(WORD word) {
+void ctestw(WORD word) {
   if (word > BYTE_MAX) {
     fset(FLAG_C);
   } else {
@@ -583,7 +583,7 @@ void logical_shift_right(BYTE *byte) {
 void negate(BYTE *byte) {
   WORD buffer = ~*byte;
   *byte = (BYTE)buffer;
-  ctest(buffer);
+  ctestw(buffer);
   test(*byte);
 }
 
@@ -679,7 +679,7 @@ void add(BYTE *dst, BYTE src) {
     buffer++;
   }
 
-  ctest(buffer);
+  ctestw(buffer);
   *dst = (BYTE)buffer;
   test(*dst);
 }
@@ -689,7 +689,7 @@ void sub(BYTE *dst, BYTE src) {
   if (fcheck(FLAG_C)) {
     buffer--;
   }
-  ctest(buffer);
+  ctestw(buffer);
   *dst = (BYTE)buffer;
   test(*dst);
 }
@@ -697,7 +697,7 @@ void sub(BYTE *dst, BYTE src) {
 void cmp(BYTE dst, BYTE src) {
   WORD buffer = (WORD)dst - (WORD)src;
 
-  ctest(buffer);
+  ctestw(buffer);
   test((BYTE)buffer);
 }
 
