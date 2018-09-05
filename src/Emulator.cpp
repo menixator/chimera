@@ -784,14 +784,14 @@ void call(bool condition) {
   }
 }
 
-void iload(BYTE *dst) { *dst = fetch(); }
+void iload(BYTE *byte) { *byte = fetch(); }
 
-void iloadw(BYTE *dst) { *dst += ((WORD)*fetch()) + ((WORD)*fetch() << 8); }
+void iloadw(WORD *word) { *word += ((WORD)fetch()) + ((WORD)fetch() << 8); }
 
-void ialoadw(BYTE *dst) {
-  WORD address = ((WORD)*fetch()) + ((WORD)*fetch() << 8);
+void ialoadw(WORD *word) {
+  WORD address = ((WORD)fetch()) + ((WORD)fetch() << 8);
   if (is_addressable(address)) {
-    *dst = address;
+    *word = address;
   }
 }
 
@@ -1318,31 +1318,31 @@ void Group_1(BYTE opcode) {
 
   case LODS_ABS:
     build_address_abs(&HB, &LB, &address);
-    if (is_addressable(address){
+    if (is_addressable(address)) {
       StackPointer = address;
     }
     break;
   case LODS_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    if (is_addressable(address){
+    if (is_addressable(address)) {
       StackPointer = address;
     }
     break;
   case LODS_IND:
     build_address_ind(&HB, &LB, &address);
-    if (is_addressable(address){
+    if (is_addressable(address)) {
       StackPointer = address;
     }
     break;
   case LODS_PAG:
     build_address_pag(&HB, &LB, &address);
-    if (is_addressable(address){
+    if (is_addressable(address)) {
       StackPointer = address;
     }
     break;
   case LODS_BAS:
     build_address_bas(&HB, &LB, &address);
-    if (is_addressable(address){
+    if (is_addressable(address)) {
       StackPointer = address;
     }
     break;
