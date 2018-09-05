@@ -1639,10 +1639,8 @@ void Group_1(BYTE opcode) {
     break;
 
   case INZ:
-    if (BaseRegister > 0) {
-      BaseRegister++;
-      ztestw(BaseRegister);
-    }
+    BaseRegister++;
+    ztestw(BaseRegister);
     break;
 
   case DPE:
@@ -1653,10 +1651,8 @@ void Group_1(BYTE opcode) {
     break;
 
   case INP:
-    if (PageRegister > 0) {
-      PageRegister++;
-      ztest(PageRegister);
-    }
+    PageRegister++;
+    ztest(PageRegister);
     break;
   }
 }
