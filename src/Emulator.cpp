@@ -579,6 +579,7 @@ void lsright(BYTE *byte) {
     ftoggle(FLAG_C);
   }
   *byte >>= 1;
+  *byte &= RSHIFT_MASK;
   test(*byte);
 }
 
