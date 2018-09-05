@@ -481,7 +481,7 @@ BYTE fetch() {
 
 void fset(int flag) { Flags |= flag; }
 void ftoggle(int flag) { Flags ^= flag; }
-void fclear(int flag) { Flags &= 0xFF - flag; }
+void fclear(int flag) { Flags &= BYTE_MAX - flag; }
 bool efcheck(int flag) { return (Flags & flag) != 0; }
 bool fcheck(int flag) { return (Flags & flag) == flag; }
 
@@ -541,17 +541,17 @@ void ntest(BYTE byte) {
 
 void ntestw(WORD word) {
   if (word < 0) {
-    Flags |= FLAG_N;
+    fset(FLAG_N);
   } else {
-    Flags &= (BYTE_MAX - FLAG_N);
+    fclear(FLAG_N);
   }
 }
 
 void ztestw(WORD word) {
   if (word == 0) {
-    Flags |= FLAG_Z;
+    fset(FLAG_Z);
   } else {
-    Flags &= (BYTE_MAX - FLAG_Z);
+    fclear(FLAG_Z);
   }
 }
 
@@ -675,7 +675,7 @@ void branch(bool condition) {
 void add(BYTE *dst, BYTE src) {
   WORD buffer = (WORD)*dst + (WORD)src;
 
-  if ((Flags & FLAG_C) != 0) {
+  if (fcheck(FLAG_C)) {
     buffer++;
   }
 
@@ -686,7 +686,7 @@ void add(BYTE *dst, BYTE src) {
 
 void sub(BYTE *dst, BYTE src) {
   WORD buffer = (WORD)*dst - (WORD)src;
-  if ((Flags & FLAG_C) != 0) {
+  if (fcheck(FLAG_C)) {
     buffer--;
   }
   ctest(buffer);
@@ -1501,7 +1501,7 @@ void Group_1(BYTE opcode) {
     push(Registers[REGISTER_E]);
     push(Registers[REGISTER_F]);
 
-    Flags |= FLAG_I;
+    fset(FLAG_I);
     break;
 
   case RTI:
