@@ -509,9 +509,7 @@ void build_address_pag(WORD *addr) {
   *addr += (WORD)((WORD)high << 8) + low;
 }
 
-void build_address_zpg(WORD *addr) {
-  *addr += 0x0000 | (WORD)fetch();
-}
+void build_address_zpg(WORD *addr) { *addr += 0x0000 | (WORD)fetch(); }
 
 void build_address_bas(WORD *addr) {
   BYTE offset = fetch();
@@ -1153,7 +1151,9 @@ void Group_1(BYTE opcode) {
 
   case JMP:
     build_address_abs(&address);
-    ProgramCounter = address;
+    if (is_addressable(address)) {
+      ProgramCounter = address;
+    }
     break;
 
   case JR:
