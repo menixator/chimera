@@ -594,7 +594,7 @@ void negate(BYTE *byte) {
 }
 
 void rrotate(BYTE *byte) {
-  BYTE lsb = lsbset(*byte); 
+  BYTE lsb = lsbset(*byte);
   *byte >>= 1;
   *byte |= (lsb << 7);
   test(*byte);
@@ -668,7 +668,7 @@ void branch(bool condition) {
     woffset += 0xFF00;
   }
 
-  if (is_addressable(ProgramCounter+woffset)) {
+  if (is_addressable(ProgramCounter + woffset)) {
     ProgramCounter += woffset;
   }
 }
@@ -784,6 +784,17 @@ void call(bool condition) {
   }
 }
 
+void iload(BYTE *dst) { *dst = fetch(); }
+
+void iloadw(BYTE *dst) { *dst += ((WORD)*fetch()) + ((WORD)*fetch() << 8); }
+
+void ialoadw(BYTE *dst) {
+  WORD address = ((WORD)*fetch()) + ((WORD)*fetch() << 8);
+  if (is_addressable(address)) {
+    *dst = address;
+  }
+}
+
 void load(BYTE *dst, WORD address) {
   if (is_addressable(address)) {
     *dst = Memory[address];
@@ -827,8 +838,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case LDAA_IMM:
-    data = fetch();
-    Registers[REGISTER_A] = data;
+    iload(&Registers[REGISTER_A]);
     break;
 
   // LDAA(Load Accumulator A) abs
@@ -858,8 +868,7 @@ void Group_1(BYTE opcode) {
 
   // LDAB(Load Accumulator B) abs
   case LDAB_IMM:
-    data = fetch();
-    Registers[REGISTER_B] = data;
+    iload(&Registers[REGISTER_B]);
     break;
 
   case LDAB_ABS:
@@ -1304,28 +1313,38 @@ void Group_1(BYTE opcode) {
     break;
 
   case LODS_IMM:
-    StackPointer = (WORD)fetch() | ((WORD)fetch() << 8);
+    ialoadw(&StackPointer);
     break;
 
   case LODS_ABS:
     build_address_abs(&HB, &LB, &address);
-    StackPointer = address;
+    if (is_addressable(address){
+      StackPointer = address;
+    }
     break;
   case LODS_ZPG:
     build_address_zpg(&HB, &LB, &address);
-    StackPointer = address;
+    if (is_addressable(address){
+      StackPointer = address;
+    }
     break;
   case LODS_IND:
     build_address_ind(&HB, &LB, &address);
-    StackPointer = address;
+    if (is_addressable(address){
+      StackPointer = address;
+    }
     break;
   case LODS_PAG:
     build_address_pag(&HB, &LB, &address);
-    StackPointer = address;
+    if (is_addressable(address){
+      StackPointer = address;
+    }
     break;
   case LODS_BAS:
     build_address_bas(&HB, &LB, &address);
-    StackPointer = address;
+    if (is_addressable(address){
+      StackPointer = address;
+    }
     break;
 
   case TSA:
@@ -1384,20 +1403,20 @@ void Group_1(BYTE opcode) {
     pop(&Registers[REGISTER_F]);
     break;
   case LX:
-    Registers[REGISTER_A] = fetch();
-    Registers[REGISTER_B] = fetch();
+    iload(&Registers[REGISTER_A]);
+    iload(&Registers[REGISTER_B]);
     break;
   case MVR_C:
-    Registers[REGISTER_C] = fetch();
+    iload(&Registers[REGISTER_C]);
     break;
   case MVR_D:
-    Registers[REGISTER_D] = fetch();
+    iload(&Registers[REGISTER_D]);
     break;
   case MVR_E:
-    Registers[REGISTER_E] = fetch();
+    iload(&Registers[REGISTER_E]);
     break;
   case MVR_F:
-    Registers[REGISTER_F] = fetch();
+    iload(&Registers[REGISTER_F]);
     break;
   case BCC:
     branch(!fcheck(FLAG_C));
@@ -1512,7 +1531,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case LDP_IMM:
-    PageRegister = fetch();
+    iload(&PageRegister);
     break;
   case LDP_ABS:
     build_address_abs(&HB, &LB, &address);
@@ -1566,7 +1585,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case LDZ_IMM:
-    BaseRegister = ((WORD)fetch()) | ((WORD)fetch() << 8);
+    iloadw(&BaseRegister);
     testw(BaseRegister);
     break;
   case LDZ_ABS:
