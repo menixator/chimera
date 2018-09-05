@@ -583,7 +583,7 @@ void logical_shift_right(BYTE *byte) {
 void negate(BYTE *byte) {
   WORD buffer = ~*byte;
   *byte = (BYTE)buffer;
-  ctestw(buffer);
+  fset(FLAG_C);
   test(*byte);
 }
 
