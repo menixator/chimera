@@ -725,24 +725,6 @@ void increment(BYTE *dst) {
   test(*dst);
 }
 
-void decrement_value_at(WORD addr) {
-  if (is_addressable(addr)) {
-    decrement(&Memory[addr]);
-  }
-}
-
-void increment_value_at(WORD addr) {
-  if (is_addressable(addr)) {
-    increment(&Memory[addr]);
-  }
-}
-
-void test_value_at(WORD addr) {
-  if (is_addressable(addr)) {
-    test(Memory[addr]);
-  }
-}
-
 void rcrotate(BYTE *byte) {
   BYTE old_carry = fcheck(FLAG_C);
   if ((*byte & LSB) != old_carry) {
@@ -1115,17 +1097,23 @@ void Group_1(BYTE opcode) {
 
   case TST:
     build_address_abs(&HB, &LB, &address);
-    test_value_at(address);
+    if (is_addressable(address)) {
+      test(Memory[address]);
+    }
     break;
 
   case INC:
     build_address_abs(&HB, &LB, &address);
-    increment_value_at(address);
+    if (is_addressable(address)) {
+      increment(&Memory[address]);
+    }
     break;
 
   case DEC:
     build_address_abs(&HB, &LB, &address);
-    decrement_value_at(address);
+    if (is_addressable(address)) {
+      decrement(&Memory[address]);
+    }
     break;
 
   case TSTA:
