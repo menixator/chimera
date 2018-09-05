@@ -10,7 +10,7 @@
 
 #pragma comment(lib, "wsock32.lib")
 
-#define STUDENT_NUMBER "12345678"
+#define STUDENT_NUMBER "S1700804"
 
 #define IP_ADDRESS_SERVER "127.0.0.1"
 
