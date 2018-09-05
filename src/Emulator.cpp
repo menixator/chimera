@@ -572,7 +572,7 @@ void test(BYTE dst) {
   ztest(dst);
 }
 
-void logical_shift_right(BYTE *byte) {
+void lsright(BYTE *byte) {
   if (lsbset(*byte) != fcheck(FLAG_C)) {
     ftoggle(FLAG_C);
   }
@@ -580,25 +580,25 @@ void logical_shift_right(BYTE *byte) {
   test(*byte);
 }
 
-void negate(BYTE *byte) {
+void flip(BYTE *byte) {
   *byte = ~*byte;
   fset(FLAG_C);
   test(*byte);
 }
 
-void twos_complement(BYTE *byte) {
+void negate(BYTE *byte) {
   *byte = 0 - *byte;
   test(*byte);
 }
 
-void rotate_right(BYTE *byte) {
+void rrotate(BYTE *byte) {
   BYTE lsb = (*byte & LSB) == LSB;
   *byte >>= 1;
   *byte |= (lsb << 7);
   test(*byte);
 }
 
-void rotate_left(BYTE *byte) {
+void lrotate(BYTE *byte) {
   BYTE msb = (*byte & MSB) == MSB;
   *byte <<= 1;
   *byte |= msb;
@@ -700,17 +700,17 @@ void cmp(BYTE dst, BYTE src) {
   test((BYTE)buffer);
 }
 
-void ior(BYTE *dst, BYTE src) {
+void bior(BYTE *dst, BYTE src) {
   *dst |= src;
   test(*dst);
 }
 
-void bitwise_and(BYTE *dst, BYTE src) {
+void band(BYTE *dst, BYTE src) {
   *dst &= src;
   test(*dst);
 }
 
-void bitwise_xor(BYTE *dst, BYTE src) {
+void bxor(BYTE *dst, BYTE src) {
   *dst ^= src;
   test(*dst);
 }
@@ -743,7 +743,7 @@ void test_value_at(WORD addr) {
   }
 }
 
-void rotate_right_through_carry(BYTE *byte) {
+void rcrotate(BYTE *byte) {
   BYTE old_carry = fcheck(FLAG_C);
   if ((*byte & LSB) != old_carry) {
     ftoggle(FLAG_C);
@@ -753,7 +753,7 @@ void rotate_right_through_carry(BYTE *byte) {
   test(*byte);
 }
 
-void rotate_left_through_carry(BYTE *byte) {
+void lcrotate(BYTE *byte) {
   BYTE old_carry = fcheck(FLAG_C);
 
   if ((*byte & MSB) >> 7 != old_carry) {
@@ -764,7 +764,7 @@ void rotate_left_through_carry(BYTE *byte) {
   test(*byte);
 }
 
-void arithmetic_shift_left(BYTE *byte) {
+void alshift(BYTE *byte) {
   if (((*byte & MSB) >> 7) != fcheck(FLAG_C)) {
     ftoggle(FLAG_C);
   }
@@ -772,7 +772,7 @@ void arithmetic_shift_left(BYTE *byte) {
   test(*byte);
 }
 
-void arithmetic_shift_right(BYTE *byte) {
+void arshift(BYTE *byte) {
   if ((*byte & LSB) != fcheck(FLAG_C)) {
     ftoggle(FLAG_C);
   }
@@ -1023,78 +1023,78 @@ void Group_1(BYTE opcode) {
     break;
 
   case IOR_A_C:
-    ior(&Registers[REGISTER_A], Registers[REGISTER_C]);
+    bior(&Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case IOR_A_D:
-    ior(&Registers[REGISTER_A], Registers[REGISTER_D]);
+    bior(&Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case IOR_A_E:
-    ior(&Registers[REGISTER_A], Registers[REGISTER_E]);
+    bior(&Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case IOR_A_F:
-    ior(&Registers[REGISTER_A], Registers[REGISTER_F]);
+    bior(&Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case IOR_B_C:
-    ior(&Registers[REGISTER_B], Registers[REGISTER_C]);
+    bior(&Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case IOR_B_D:
-    ior(&Registers[REGISTER_B], Registers[REGISTER_D]);
+    bior(&Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case IOR_B_E:
-    ior(&Registers[REGISTER_B], Registers[REGISTER_E]);
+    bior(&Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case IOR_B_F:
-    ior(&Registers[REGISTER_B], Registers[REGISTER_F]);
+    bior(&Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case AND_A_C:
-    bitwise_and(&Registers[REGISTER_A], Registers[REGISTER_C]);
+    band(&Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case AND_A_D:
-    bitwise_and(&Registers[REGISTER_A], Registers[REGISTER_D]);
+    band(&Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case AND_A_E:
-    bitwise_and(&Registers[REGISTER_A], Registers[REGISTER_E]);
+    band(&Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case AND_A_F:
-    bitwise_and(&Registers[REGISTER_A], Registers[REGISTER_F]);
+    band(&Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case AND_B_C:
-    bitwise_and(&Registers[REGISTER_B], Registers[REGISTER_C]);
+    band(&Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case AND_B_D:
-    bitwise_and(&Registers[REGISTER_B], Registers[REGISTER_D]);
+    band(&Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case AND_B_E:
-    bitwise_and(&Registers[REGISTER_B], Registers[REGISTER_E]);
+    band(&Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case AND_B_F:
-    bitwise_and(&Registers[REGISTER_B], Registers[REGISTER_F]);
+    band(&Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case XOR_A_C:
-    bitwise_xor(&Registers[REGISTER_A], Registers[REGISTER_C]);
+    bxor(&Registers[REGISTER_A], Registers[REGISTER_C]);
     break;
   case XOR_A_D:
-    bitwise_xor(&Registers[REGISTER_A], Registers[REGISTER_D]);
+    bxor(&Registers[REGISTER_A], Registers[REGISTER_D]);
     break;
   case XOR_A_E:
-    bitwise_xor(&Registers[REGISTER_A], Registers[REGISTER_E]);
+    bxor(&Registers[REGISTER_A], Registers[REGISTER_E]);
     break;
   case XOR_A_F:
-    bitwise_xor(&Registers[REGISTER_A], Registers[REGISTER_F]);
+    bxor(&Registers[REGISTER_A], Registers[REGISTER_F]);
     break;
   case XOR_B_C:
-    bitwise_xor(&Registers[REGISTER_B], Registers[REGISTER_C]);
+    bxor(&Registers[REGISTER_B], Registers[REGISTER_C]);
     break;
   case XOR_B_D:
-    bitwise_xor(&Registers[REGISTER_B], Registers[REGISTER_D]);
+    bxor(&Registers[REGISTER_B], Registers[REGISTER_D]);
     break;
   case XOR_B_E:
-    bitwise_xor(&Registers[REGISTER_B], Registers[REGISTER_E]);
+    bxor(&Registers[REGISTER_B], Registers[REGISTER_E]);
     break;
   case XOR_B_F:
-    bitwise_xor(&Registers[REGISTER_B], Registers[REGISTER_F]);
+    bxor(&Registers[REGISTER_B], Registers[REGISTER_F]);
     break;
 
   case CPIA:
@@ -1106,11 +1106,11 @@ void Group_1(BYTE opcode) {
     break;
 
   case ANIA:
-    bitwise_and(&Registers[REGISTER_A], fetch());
+    band(&Registers[REGISTER_A], fetch());
     break;
 
   case ANIB:
-    bitwise_and(&Registers[REGISTER_B], fetch());
+    band(&Registers[REGISTER_B], fetch());
     break;
 
   case TST:
@@ -1175,136 +1175,136 @@ void Group_1(BYTE opcode) {
   case RCR:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
-      rotate_right_through_carry(&Memory[address]);
+      rcrotate(&Memory[address]);
     }
     break;
 
   case RCRA:
-    rotate_right_through_carry(&Registers[REGISTER_A]);
+    rcrotate(&Registers[REGISTER_A]);
     break;
 
   case RCRB:
-    rotate_right_through_carry(&Registers[REGISTER_B]);
+    rcrotate(&Registers[REGISTER_B]);
     break;
 
   case RLC:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
-      rotate_left_through_carry(&Memory[address]);
+      lcrotate(&Memory[address]);
     }
     break;
 
   case RLCA:
-    rotate_left_through_carry(&Registers[REGISTER_A]);
+    lcrotate(&Registers[REGISTER_A]);
     break;
 
   case RLCB:
-    rotate_left_through_carry(&Registers[REGISTER_B]);
+    lcrotate(&Registers[REGISTER_B]);
     break;
 
   // Shift Left
   case ASL:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
-      arithmetic_shift_left(&Memory[address]);
+      alshift(&Memory[address]);
     }
     break;
   case ASLA:
-    arithmetic_shift_left(&Registers[REGISTER_A]);
+    alshift(&Registers[REGISTER_A]);
     break;
   case ASLB:
-    arithmetic_shift_left(&Registers[REGISTER_B]);
+    alshift(&Registers[REGISTER_B]);
     break;
 
   // Arithmetic shift right
   case ASR:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
-      arithmetic_shift_right(&Memory[address]);
+      arshift(&Memory[address]);
     }
     break;
 
   case ASRA:
-    arithmetic_shift_right(&Registers[REGISTER_A]);
+    arshift(&Registers[REGISTER_A]);
     break;
 
   case ASRB:
-    arithmetic_shift_right(&Registers[REGISTER_B]);
+    arshift(&Registers[REGISTER_B]);
     break;
 
   case LSR:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
-      logical_shift_right(&Memory[address]);
+      lsright(&Memory[address]);
     }
     break;
 
   case LSRA:
-    logical_shift_right(&Registers[REGISTER_A]);
+    lsright(&Registers[REGISTER_A]);
     break;
 
   case LSRB:
-    logical_shift_right(&Registers[REGISTER_B]);
+    lsright(&Registers[REGISTER_B]);
     break;
 
   case NOT:
+    build_address_abs(&HB, &LB, &address);
+    if (is_addressable(address)) {
+      flip(&Memory[address]);
+    }
+    break;
+
+  case NOTA:
+    flip(&Registers[REGISTER_A]);
+    break;
+
+  case NOTB:
+    flip(&Registers[REGISTER_B]);
+    break;
+
+  case NEG:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
       negate(&Memory[address]);
     }
     break;
 
-  case NOTA:
+  case NEGA:
     negate(&Registers[REGISTER_A]);
     break;
 
-  case NOTB:
-    negate(&Registers[REGISTER_B]);
-    break;
-
-  case NEG:
-    build_address_abs(&HB, &LB, &address);
-    if (is_addressable(address)) {
-      twos_complement(&Memory[address]);
-    }
-    break;
-
-  case NEGA:
-    twos_complement(&Registers[REGISTER_A]);
-    break;
-
   case NEGB:
-    twos_complement(&Registers[REGISTER_B]);
+    negate(&Registers[REGISTER_B]);
     break;
 
   case RL:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
-      rotate_left(&Memory[address]);
+      lrotate(&Memory[address]);
     }
     break;
 
   case RLA:
-    rotate_left(&Registers[REGISTER_A]);
+    lrotate(&Registers[REGISTER_A]);
     break;
 
   case RLB:
-    rotate_left(&Registers[REGISTER_B]);
+    lrotate(&Registers[REGISTER_B]);
     break;
 
   case RR:
     build_address_abs(&HB, &LB, &address);
     if (is_addressable(address)) {
-      rotate_right(&Memory[address]);
+      rrotate(&Memory[address]);
     }
     break;
 
   case RRA:
-    rotate_right(&Registers[REGISTER_A]);
+    rrotate(&Registers[REGISTER_A]);
     break;
 
   case RRB:
-    rotate_right(&Registers[REGISTER_B]);
+    rrotate(&Registers[REGISTER_B]);
     break;
 
   case LODS_IMM:
