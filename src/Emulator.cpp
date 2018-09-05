@@ -478,6 +478,8 @@ BYTE fetch() {
 #define MSB 0x80
 #define LSB 0x01
 #define BYTE_MAX 0xFF
+#define RSHIFT_MASK 0x7F
+#define LSHIFT_MASK 0xFE
 
 void fset(int flag) { Flags |= flag; }
 void ftoggle(int flag) { Flags ^= flag; }
@@ -592,14 +594,14 @@ void negate(BYTE *byte) {
 }
 
 void rrotate(BYTE *byte) {
-  BYTE lsb = (*byte & LSB) == LSB;
+  BYTE lsb = lsbset(*byte); 
   *byte >>= 1;
   *byte |= (lsb << 7);
   test(*byte);
 }
 
 void lrotate(BYTE *byte) {
-  BYTE msb = (*byte & MSB) == MSB;
+  BYTE msb = msbset(*byte);
   *byte <<= 1;
   *byte |= msb;
   test(*byte);
@@ -655,19 +657,19 @@ bool popw(WORD *word) {
 }
 
 void branch(bool condition) {
-  BYTE LB = fetch();
+  BYTE boffset = fetch();
 
   if (!condition)
     return;
 
-  WORD offset = (WORD)LB;
+  WORD woffset = (WORD)boffset;
 
-  if ((offset & MSB) != 0) {
-    offset = offset + 0xFF00;
+  if (msbset(boffset)) {
+    woffset += 0xFF00;
   }
 
-  if (is_addressable(ProgramCounter + offset)) {
-    ProgramCounter += offset;
+  if (is_addressable(ProgramCounter+woffset)) {
+    ProgramCounter += woffset;
   }
 }
 
@@ -727,10 +729,11 @@ void increment(BYTE *dst) {
 
 void rcrotate(BYTE *byte) {
   BYTE old_carry = fcheck(FLAG_C);
-  if ((*byte & LSB) != old_carry) {
+  if (lsbset(*byte) != old_carry) {
     ftoggle(FLAG_C);
   }
   *byte >>= 1;
+  *byte &= RSHIFT_MASK;
   *byte |= old_carry << 7;
   test(*byte);
 }
@@ -738,29 +741,34 @@ void rcrotate(BYTE *byte) {
 void lcrotate(BYTE *byte) {
   BYTE old_carry = fcheck(FLAG_C);
 
-  if ((*byte & MSB) >> 7 != old_carry) {
+  if (msbset(*byte) != old_carry) {
     ftoggle(FLAG_C);
   }
   *byte <<= 1;
+  *byte &= LSHIFT_MASK;
   *byte |= old_carry;
   test(*byte);
 }
 
 void alshift(BYTE *byte) {
-  if (((*byte & MSB) >> 7) != fcheck(FLAG_C)) {
+  if (msbset(*byte) != fcheck(FLAG_C)) {
     ftoggle(FLAG_C);
   }
   *byte <<= 1;
+  *byte &= LSHIFT_MASK;
   test(*byte);
 }
 
 void arshift(BYTE *byte) {
-  if ((*byte & LSB) != fcheck(FLAG_C)) {
+  BYTE msb = msbset(*byte);
+
+  if (lsbset(*byte) != fcheck(FLAG_C)) {
     ftoggle(FLAG_C);
   }
 
   *byte >>= 1;
-  *byte |= (*byte >> 6) << 7;
+  *byte &= RSHIFT_MASK;
+  *byte |= msb << 7;
   test(*byte);
 }
 
