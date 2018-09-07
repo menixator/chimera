@@ -865,8 +865,7 @@ void storew(WORD word, WORD address) {
   if (address >= 0 && address <= MEMORY_SIZE - 2) {
     Memory[address] = (BYTE)word;
     Memory[address + 1] = (BYTE)word >> 8;
-    ntestw(word);
-    ztestw(word);
+    testw(word);
   }
 }
 
