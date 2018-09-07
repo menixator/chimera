@@ -24,7 +24,6 @@
 #define MAX_FILENAME_SIZE 500
 #define MAX_BUFFER_SIZE 500
 
-//
 #if __linux__
 #define SOCKADDR_IN sockaddr_in
 #define SOCKET int
@@ -210,7 +209,6 @@ char opcode_mneumonics[][14] = {
 #define LDAB_BAS 0x92
 
 // STORA (Stores Accumulator A into a Memory Address)
-// Immediate Addressing is absent.
 #define STORA_ABS 0x1C
 #define STORA_ZPG 0x2C
 #define STORA_IND 0x3C
@@ -218,71 +216,93 @@ char opcode_mneumonics[][14] = {
 #define STORA_BAS 0x5C
 
 // STORB (Stores Accumulator B into a Memory Address)
-// Immediate Addressing is absent.
 #define STORB_ABS 0x1D
 #define STORB_ZPG 0x2D
 #define STORB_IND 0x3D
 #define STORB_PAG 0x4D
 #define STORB_BAS 0x5D
 
+// Tests a value in memory or an accumulator
 #define TST 0x10
 #define TSTA 0x20
 #define TSTB 0x30
 
+// Increments a value in memory or an accumulator
 #define INC 0x11
 #define INCA 0x21
 #define INCB 0x31
 
+// Decrements a value in memory or an accumulator
 #define DEC 0x12
 #define DECA 0x22
 #define DECB 0x32
 
+// Compares an immediate value with an Accumulator
 #define CPIA 0xFC
 #define CPIB 0xFD
+
+// Bitwise and an Immediate value with an Accumulator
 #define ANIA 0xFE
 #define ANIB 0xFF
 
+// Jumps to an address
 #define JMP 0x6D
+
+// Jumps to a subroutine
 #define JR 0x00
+
+// Return from a subroutine
 #define RTS 0x86
+
+// Branch always
 #define BRA 0xE7
 
+// Rotate memory/accumulator right through carry
 #define RCR 0x13
 #define RCRA 0x23
 #define RCRB 0x33
 
+// Rotate memory/accumulator left through carry
 #define RLC 0x14
 #define RLCA 0x24
 #define RLCB 0x34
 
+// Arithmetic shift left memory/accumulator
 #define ASL 0x15
 #define ASLA 0x25
 #define ASLB 0x35
 
+// Arithmetic shift right memory/accumulator
 #define ASR 0x16
 #define ASRA 0x26
 #define ASRB 0x36
 
+// Logical shift right memory/accumulator
 #define LSR 0x17
 #define LSRA 0x27
 #define LSRB 0x37
 
+// Bitwise NOT/One's complement memory/accumulator
 #define NOT 0x18
 #define NOTA 0x28
 #define NOTB 0x38
 
+// Two's complement memory/accumulator
 #define NEG 0x19
 #define NEGA 0x29
 #define NEGB 0x39
 
+// Rotate left memory/accumulator
 #define RL 0x1A
 #define RLA 0x2A
 #define RLB 0x3A
 
+// Rotate right memory/accumulator
 #define RR 0x1B
 #define RRA 0x2B
 #define RRB 0x3B
 
+// Loads the stack pointer
 #define LODS_IMM 0x43
 #define LODS_ABS 0x53
 #define LODS_ZPG 0x63
@@ -290,8 +310,10 @@ char opcode_mneumonics[][14] = {
 #define LODS_PAG 0x83
 #define LODS_BAS 0x93
 
+// Transfers the status register to accumulator A
 #define TSA 0x09
 
+// Pushes a register into the stack
 #define PUSH_A 0x5E
 #define PUSH_B 0x6E
 #define PUSH_FL 0x7E
@@ -300,6 +322,7 @@ char opcode_mneumonics[][14] = {
 #define PUSH_E 0xAE
 #define PUSH_F 0xBE
 
+// Pops a byte off the stack into a register
 #define POP_A 0x5F
 #define POP_B 0x6F
 #define POP_FL 0x7F
@@ -308,43 +331,73 @@ char opcode_mneumonics[][14] = {
 #define POP_E 0xAF
 #define POP_F 0xBF
 
+// Loads register A and B from immediate data
 #define LX 0x0E
+
+// Immediate load a general purpose register
 #define MVR_C 0xF8
 #define MVR_D 0xF9
 #define MVR_E 0xFA
 #define MVR_F 0xFB
 
+// Branch if carry clear
 #define BCC 0xE8
+// Branch if carry set
 #define BCS 0xE9
+// Branch if result is not zero
 #define BNE 0xEA
+// Branch if result is zero
 #define BEQ 0xEB
+// Branch on negative result
 #define BMI 0xEC
+// Branch on positive result
 #define BPL 0xED
+// Branch if result same or lower
 #define BLS 0xEE
+// Branch if result higher
 #define BHI 0xEF
 
+// Call if carry clear
 #define CCC 0x01
+// Call if carry set
 #define CCS 0x02
+// Call if result is not zero
 #define CNE 0x03
+// Call if result is zero
 #define CEQ 0x04
+// Call on negative result
 #define CMI 0x05
+// Call on positive result
 #define CPL 0x06
+// Call if result same or lower
 #define CHI 0x07
+// Call if result higher
 #define CLE 0x08
 
+// Clear and Set carry flag
 #define CLC 0x56
 #define STC 0x57
 
+// Clear and Set interrupt flag
 #define CLI 0x58
 #define SEI 0x59
 
+// Complement Carry flag
 #define CMC 0x5A
+
+// No Operation
 #define NOP 0x2E
+
+// Wait for an interrupt
 #define WAI 0x2F
 
+// Software Interrupt
 #define SWI 0x3E
+
+// Return from Software Interrupt
 #define RTI 0x3F
 
+// Load Page Register
 #define LDP_IMM 0x90
 #define LDP_ABS 0xA0
 #define LDP_ZPG 0xB0
@@ -352,15 +405,19 @@ char opcode_mneumonics[][14] = {
 #define LDP_PAG 0xD0
 #define LDP_BAS 0xE0
 
+// Stores Page Register in memory
 #define STP_ABS 0x40
 #define STP_ZPG 0x50
 #define STP_IND 0x60
 #define STP_PAG 0x70
 #define STP_BAS 0x80
 
+// Transfers accumulator A into Page Register
 #define TAP 0x0A
+// Transfers Page Register into accumulator A
 #define TPA 0x0B
 
+// Loads the Base Register
 #define LDZ_IMM 0x44
 #define LDZ_ABS 0x54
 #define LDZ_ZPG 0x64
@@ -368,18 +425,27 @@ char opcode_mneumonics[][14] = {
 #define LDZ_PAG 0x84
 #define LDZ_BAS 0x94
 
+// Stores the Base Register in memory
 #define STZ_ABS 0x55
 #define STZ_ZPG 0x65
 #define STZ_IND 0x75
 #define STZ_PAG 0x85
 #define STZ_BAS 0x95
 
+// Decrements the Base Register
 #define DEZ 0x49
+// Increments the Base Register
 #define INZ 0x4A
 
-#define DPE 0x47
+// Decrements the Page Register
+#define DEP 0x47
+
+// Incremnets the Page Registerr
 #define INP 0x48
 
+// Various arithmetic and logical operations
+
+// Adition between accumulators and general purpose registers
 #define ADD_A_C 0x67
 #define ADD_A_D 0x77
 #define ADD_A_E 0x87
@@ -390,6 +456,7 @@ char opcode_mneumonics[][14] = {
 #define ADD_B_E 0xC7
 #define ADD_B_F 0xD7
 
+// Subtration between accumulators and general purpose registers
 #define SUB_A_C 0x68
 #define SUB_A_D 0x78
 #define SUB_A_E 0x88
@@ -400,6 +467,7 @@ char opcode_mneumonics[][14] = {
 #define SUB_B_E 0xC8
 #define SUB_B_F 0xD8
 
+// Comparison between accumulators and general purpose registers
 #define CMP_A_C 0x69
 #define CMP_A_D 0x79
 #define CMP_A_E 0x89
@@ -410,6 +478,7 @@ char opcode_mneumonics[][14] = {
 #define CMP_B_E 0xC9
 #define CMP_B_F 0xD9
 
+// Bitwise Inclusive Or between accumulators and general purpose registers
 #define IOR_A_C 0x6A
 #define IOR_A_D 0x7A
 #define IOR_A_E 0x8A
@@ -420,6 +489,7 @@ char opcode_mneumonics[][14] = {
 #define IOR_B_E 0xCA
 #define IOR_B_F 0xDA
 
+// Bitwise And between accumulators and general purpose registers
 #define AND_A_C 0x6B
 #define AND_A_D 0x7B
 #define AND_A_E 0x8B
@@ -430,6 +500,7 @@ char opcode_mneumonics[][14] = {
 #define AND_B_E 0xCB
 #define AND_B_F 0xDB
 
+// Bitwise Exclusive Or between accumulators and general purpose registers
 #define XOR_A_C 0x6C
 #define XOR_A_D 0x7C
 #define XOR_A_E 0x8C
@@ -757,7 +828,7 @@ void call(bool condition) {
   build_address_abs(&address);
 
   if (condition && pushw(ProgramCounter) && is_addressable(address)) {
-      ProgramCounter = address;
+    ProgramCounter = address;
   }
 }
 
@@ -1615,7 +1686,7 @@ void Group_1(BYTE opcode) {
     ztestw(BaseRegister);
     break;
 
-  case DPE:
+  case DEP:
     if (PageRegister > 0) {
       PageRegister--;
       ztest(PageRegister);
