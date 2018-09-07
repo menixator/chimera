@@ -756,9 +756,8 @@ void call(bool condition) {
   WORD address = 0;
   build_address_abs(&address);
 
-  if (is_addressable(address) && condition) {
-    pushw(ProgramCounter);
-    ProgramCounter = address;
+  if (condition && pushw(ProgramCounter) && is_addressable(address)) {
+      ProgramCounter = address;
   }
 }
 
