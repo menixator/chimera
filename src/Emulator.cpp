@@ -1,6 +1,5 @@
 
 #include <arpa/inet.h>
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1534,10 +1533,6 @@ void Group_1(BYTE opcode) {
   WORD address = 0;
 
   switch (opcode) {
-  default:
-    printf("Unimplemented opcode: %#04X\n", opcode);
-    assert(strcmp(opcode_mneumonics[opcode], "ILLEGAL     ") == 0);
-    break;
 
   case LDAA_IMM:
     iload(&Registers[REGISTER_A]);
@@ -2379,9 +2374,6 @@ void Group_2_Move(BYTE opcode) {
   //  5       F       3
   BYTE source = HN < 0x2 ? 0x5 - HN : HN - 0x2;
   BYTE dest = LN < 0x2 ? 0x5 - LN : LN - 0x2;
-
-  assert(dest >= 0 && dest <= 5);
-  assert(source >= 0 && dest <= 5);
 
   Registers[dest] = Registers[source];
 }
