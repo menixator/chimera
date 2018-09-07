@@ -24,8 +24,8 @@
 #define MAX_FILENAME_SIZE 500
 #define MAX_BUFFER_SIZE 500
 
-#if __linux
-
+//
+#if __linux__
 #define SOCKADDR_IN sockaddr_in
 #define SOCKET int
 #define SOCKADDR sockaddr
