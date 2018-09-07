@@ -2916,4 +2916,6 @@ int _tmain(int argc, _TCHAR *argv[]) {
   return 0;
 }
 
+#if __linux__
 int main(int argc, char *argv[]) { return _tmain(argc, argv); }
+#endif
