@@ -191,8 +191,8 @@ char opcode_mneumonics[][14] = {
     "CPIA  #      ", "CPIB  #      ", "ANIA  #      ", "ANIB  #      ",
 
 };
-// OPCodes
-// LDAA (Loads data into Accumulator A)
+// Op-code directives
+// Loads data into accumulator A
 #define LDAA_IMM 0x41
 #define LDAA_ABS 0x51
 #define LDAA_ZPG 0x61
@@ -200,7 +200,7 @@ char opcode_mneumonics[][14] = {
 #define LDAA_PAG 0x81
 #define LDAA_BAS 0x91
 
-// LDAB (Loads data into Accumulator B)
+// Loads data into accumulator B
 #define LDAB_IMM 0x42
 #define LDAB_ABS 0x52
 #define LDAB_ZPG 0x62
@@ -208,14 +208,14 @@ char opcode_mneumonics[][14] = {
 #define LDAB_PAG 0x82
 #define LDAB_BAS 0x92
 
-// STORA (Stores Accumulator A into a Memory Address)
+// Stores the data in accumulator A in memory
 #define STORA_ABS 0x1C
 #define STORA_ZPG 0x2C
 #define STORA_IND 0x3C
 #define STORA_PAG 0x4C
 #define STORA_BAS 0x5C
 
-// STORB (Stores Accumulator B into a Memory Address)
+// Stores the data in accumulator B in memory
 #define STORB_ABS 0x1D
 #define STORB_ZPG 0x2D
 #define STORB_IND 0x3D
