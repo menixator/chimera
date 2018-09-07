@@ -514,6 +514,29 @@ char opcode_mneumonics[][14] = {
 ////////////////////////////////////////////////////////////////////////////////
 //                           Simulator/Emulator (Start)                       //
 ////////////////////////////////////////////////////////////////////////////////
+
+// Define some directives to avoid magic numbers
+#define MSB 0x80
+#define LSB 0x01
+#define BYTE_MAX 0xFF
+#define RSHIFT_MASK 0x7F
+#define LSHIFT_MASK 0xFE
+
+/**
+ * fetches next argument to an opcode
+ *
+ * params:
+ *      none
+ *
+ * returns:
+ *      a byte of data
+ *
+ * warnings:
+ *      Has a tendency to clobber the
+ *      runtime if called an unexpected amount of times.
+ *      If an opcode has an argument, always ensure that
+ *      fetch is called an appropriate no matter what.
+ */
 BYTE fetch() {
   BYTE byte = 0;
 
@@ -527,27 +550,135 @@ BYTE fetch() {
   return byte;
 }
 
-#define MSB 0x80
-#define LSB 0x01
-#define BYTE_MAX 0xFF
-#define RSHIFT_MASK 0x7F
-#define LSHIFT_MASK 0xFE
-
+/**
+ * Sets a flag
+ *
+ * params:
+ *      int flag: any integer defined with the FLAG_* directives
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void fset(int flag) { Flags |= flag; }
+
+/**
+ * Toggles the state of a flag
+ *
+ * params:
+ *      int flag: any integer defined with the FLAG_* directives
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void ftoggle(int flag) { Flags ^= flag; }
+
+/**
+ * Clears the state of a flag
+ *
+ * params:
+ *      int flag: any integer defined with the FLAG_* directives
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void fclear(int flag) { Flags &= BYTE_MAX - flag; }
+
+/**
+ * Checks if multiple flags were on
+ *
+ * params:
+ *      int flag: bitwise result of any amount of integers defined with the
+ * FLAG_* directives
+ *
+ * returns:
+ *     a boolean value representing whether any of the passed flags were on
+ *
+ * warnings:
+ *      none
+ */
 bool efcheck(int flag) { return (Flags & flag) != 0; }
+
+/**
+ * Checks if a single flag was on
+ *
+ * params:
+ *      int flag: any integer defined with the FLAG_* directives
+ *
+ * returns:
+ *     a boolean value representing whether any of the passed flags were on
+ *
+ * warnings:
+ *      none
+ */
 bool fcheck(int flag) { return (Flags & flag) == flag; }
 
+/**
+ * Checks if the most significant bit was turned on in a byte
+ *
+ * params:
+ *      BYTE byte: a byte of data
+ *
+ * returns:
+ *     a boolean value reflecting the state of the most significant bit
+ *
+ * warnings:
+ *      none
+ */
 bool msbset(BYTE byte) { return (byte & MSB) == MSB; }
+
+/**
+ * Checks if the least significant bit was turned on in a byte
+ *
+ * params:
+ *      BYTE byte: a byte of data
+ *
+ * returns:
+ *     a boolean value reflecting the state of the least significant bit
+ *
+ * warnings:
+ *      none
+ */
 bool lsbset(BYTE byte) { return (byte & LSB) == LSB; }
 
+/**
+ * builds a 16 bit address for opcodes that use absolute addressing
+ *
+ * params:
+ *      WORD * addr: pointer to a WORD to write the build address to
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void build_address_abs(WORD *addr) {
   BYTE low = fetch();
   BYTE high = fetch();
   *addr += (WORD)((WORD)high << 8) + low;
 }
 
+/**
+ * builds a 16 bit address for opcodes that use indirect addressing
+ *
+ * params:
+ *      WORD * addr: pointer to a WORD to write the build address to
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void build_address_ind(WORD *addr) {
   build_address_abs(addr);
   BYTE low = Memory[*addr];
@@ -555,14 +686,50 @@ void build_address_ind(WORD *addr) {
   *addr = (WORD)((WORD)high << 8) + low;
 }
 
+/**
+ * builds a 16 bit address for opcodes that use paged addressing
+ *
+ * params:
+ *      WORD * addr: pointer to a WORD to write the build address to
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void build_address_pag(WORD *addr) {
   WORD high = PageRegister;
   WORD low = fetch();
   *addr += (WORD)((WORD)high << 8) + low;
 }
 
+/**
+ * builds a 16 bit address for opcodes that use zero paged addressing
+ *
+ * params:
+ *      WORD * addr: pointer to a WORD to write the build address to
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void build_address_zpg(WORD *addr) { *addr += 0x0000 | (WORD)fetch(); }
 
+/**
+ * builds a 16 bit address for opcodes that use base offset addressing
+ *
+ * params:
+ *      WORD * addr: pointer to a WORD to write the build address to
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void build_address_bas(WORD *addr) {
   BYTE offset = fetch();
   if (msbset(offset)) {
@@ -572,9 +739,32 @@ void build_address_bas(WORD *addr) {
   }
 }
 
+/**
+ * checks if an address is in range
+ *
+ * params:
+ *      WORD addr: an address
+ *
+ * returns:
+ *     a boolean value representing whether or not the address is valid
+ *
+ * warnings:
+ *      none
+ */
 bool is_addressable(WORD addr) { return addr >= 0 && addr < MEMORY_SIZE; };
 
-// Sets ZERO flag
+/**
+ * tests a BYTE and sets the zero flag based on it
+ *
+ * params:
+ *      BYTE byte: a BYTE of data
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *     none
+ */
 void ztest(BYTE byte) {
   if (byte == 0) {
     fset(FLAG_Z);
@@ -583,6 +773,18 @@ void ztest(BYTE byte) {
   }
 }
 
+/**
+ * tests a BYTE and sets the negative flag based on it
+ *
+ * params:
+ *      BYTE byte: a BYTE of data
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *     none
+ */
 void ntest(BYTE byte) {
   if (msbset(byte)) {
     fset(FLAG_N);
@@ -591,6 +793,18 @@ void ntest(BYTE byte) {
   }
 }
 
+/**
+ * tests a WORD and sets the negative flag based on it
+ *
+ * params:
+ *      WORD word: a WORD of data
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *     none
+ */
 void ntestw(WORD word) {
   if (word < 0) {
     fset(FLAG_N);
@@ -599,6 +813,18 @@ void ntestw(WORD word) {
   }
 }
 
+/**
+ * tests a WORD and sets the zero flag based on it
+ *
+ * params:
+ *      WORD word: a WORD of data
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *     none
+ */
 void ztestw(WORD word) {
   if (word == 0) {
     fset(FLAG_Z);
@@ -607,6 +833,19 @@ void ztestw(WORD word) {
   }
 }
 
+/**
+ * tests a WORD and sets the carry flag based on it
+ *
+ * params:
+ *      WORD word: a WORD of data
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *     ctestw has no equivalent for BYTEs. The 'w' was added
+ *     to the function name for consistency in the naming scheme.
+ */
 void ctestw(WORD word) {
   if (word > BYTE_MAX) {
     fset(FLAG_C);
@@ -615,15 +854,43 @@ void ctestw(WORD word) {
   }
 }
 
+/**
+ * tests a WORD and sets the negative flag AND zero flag based on it
+ *
+ * params:
+ *      WORD word: a WORD of data
+ *
+ * returns:
+ *     none
+ */
 void testw(WORD word) {
   ntestw(word);
   ztestw(word);
 }
+
+/**
+ * tests a BYTE and sets the negative flag AND zero flag based on it
+ *
+ * params:
+ *      BYTE byte: a BYTE of data
+ *
+ * returns:
+ *     none
+ */
 void test(BYTE dst) {
   ntest(dst);
   ztest(dst);
 }
 
+/**
+ * Performs a logical shift right on a byte
+ *
+ * params:
+ *      BYTE *byte: a pointer to a BYTE
+ *
+ * returns:
+ *     none
+ */
 void lsright(BYTE *byte) {
   if (lsbset(*byte) != fcheck(FLAG_C)) {
     ftoggle(FLAG_C);
@@ -633,17 +900,54 @@ void lsright(BYTE *byte) {
   test(*byte);
 }
 
+/**
+ * Performs a one's complement on a byte
+ *
+ * params:
+ *      BYTE *byte: a pointer to a BYTE
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      While it's confusing, the marking server requires the one's
+ *      complement operation to always turn on the carry flag
+ */
 void flip(BYTE *byte) {
   *byte = ~*byte;
   fset(FLAG_C);
   test(*byte);
 }
 
+/**
+ * Performs a two's complement on a byte
+ *
+ * params:
+ *      BYTE *byte: a pointer to a BYTE
+ *
+ * returns:
+ *     none
+ *
+ * warnings:
+ *      none
+ */
 void negate(BYTE *byte) {
   *byte = 0 - *byte;
   test(*byte);
 }
 
+/**
+ * Rotates a byte to the right
+ *
+ * params:
+ *      BYTE *byte: a pointer to a BYTE
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *      none
+ */
 void rrotate(BYTE *byte) {
   BYTE lsb = lsbset(*byte);
   *byte >>= 1;
@@ -651,6 +955,18 @@ void rrotate(BYTE *byte) {
   test(*byte);
 }
 
+/**
+ * Rotates a byte to the left
+ *
+ * params:
+ *      BYTE *byte: a pointer to a BYTE
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *      none
+ */
 void lrotate(BYTE *byte) {
   BYTE msb = msbset(*byte);
   *byte <<= 1;
@@ -658,11 +974,38 @@ void lrotate(BYTE *byte) {
   test(*byte);
 }
 
+/**
+ *  UNSAFE push a byte to the stack. Not to be used directly.
+ *  Use pushw()/push() instead.
+ *
+ * params:
+ *      BYTE byte: a BYTE of data to push onto the stack
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *      This function does not check if the stack has enough
+ *      space for the byte that is being pushed.
+ */
 void upush(BYTE reg) {
   Memory[StackPointer] = reg;
   StackPointer--;
 }
 
+/**
+ *  Pushes a byte onto the stack.
+ *
+ * params:
+ *      BYTE byte: a BYTE of data
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *      This function does not check if the stack has enough
+ *      space for the byte that is being pushed.
+ */
 bool push(BYTE reg) {
   if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
     upush(reg);
@@ -671,11 +1014,36 @@ bool push(BYTE reg) {
   return false;
 }
 
+/**
+ *  UNSAFE pop a byte off the stack. Not to be used directly.
+ *  Use popw()/pop() instead.
+ *
+ * params:
+ *      BYTE byte: a BYTE of data
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *      This function does not check if the stack has any data
+ */
 void upop(BYTE *reg) {
   StackPointer++;
   *reg = Memory[StackPointer];
 }
 
+/**
+ * Pops a byte off the stack.
+ *
+ * params:
+ *      BYTE *byte: a pointer to a BYTE
+ *
+ * returns:
+ *      a boolean value reflecting the status of the operation
+ *
+ * warnings:
+ *      This function does not check if the stack has any data
+ */
 bool pop(BYTE *reg) {
   if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
     upop(reg);
@@ -684,16 +1052,41 @@ bool pop(BYTE *reg) {
   return false;
 }
 
+/**
+ *  Pushes a WORD onto the stack.
+ *
+ * params:
+ *      WORD word: a word of data
+ *
+ * returns:
+ *      a boolean value reflecting the status of the operation
+ *
+ * warnings:
+ *     none
+ */
 bool pushw(WORD word) {
   if ((StackPointer >= 2) && (StackPointer < MEMORY_SIZE)) {
-    // Low first
+    // Low byte is pushed first
     upush(word & BYTE_MAX);
-    // High second
+    // High  byte is pushed second
     upush((word >> 8) & BYTE_MAX);
     return true;
   }
   return false;
 }
+
+/**
+ * Pops a WORD off the stack
+ *
+ * params:
+ *      WORD *word: a pointer to a WORD
+ *
+ * returns:
+ *      a boolean value reflecting the status of the operation
+ *
+ * warnings:
+ *     none
+ */
 bool popw(WORD *word) {
   BYTE LB = 0;
   BYTE HB = 0;
@@ -707,6 +1100,18 @@ bool popw(WORD *word) {
   return false;
 }
 
+/**
+ * Branches the execution
+ *
+ * params:
+ *      bool condition: whether or not the branch.
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void branch(bool condition) {
   BYTE boffset = fetch();
 
@@ -724,6 +1129,19 @@ void branch(bool condition) {
   }
 }
 
+/**
+ * Performs an addition operation with two bytes
+ *
+ * params:
+ *      BYTE *dst: pointer to the byte to store the result in
+ *      BYTE src: data to add
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void add(BYTE *dst, BYTE src) {
   WORD buffer = (WORD)*dst + (WORD)src;
 
@@ -736,6 +1154,19 @@ void add(BYTE *dst, BYTE src) {
   test(*dst);
 }
 
+/**
+ * Performs an subtraction operation with two bytes
+ *
+ * params:
+ *      BYTE *dst: pointer to the byte to store the result in
+ *      BYTE src: data to add
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void sub(BYTE *dst, BYTE src) {
   WORD buffer = (WORD)*dst - (WORD)src;
   if (fcheck(FLAG_C)) {
@@ -746,6 +1177,19 @@ void sub(BYTE *dst, BYTE src) {
   test(*dst);
 }
 
+/**
+ * Performs an compare operation with two bytes
+ *
+ * params:
+ *      BYTE *dst: pointer to the byte to store the result in
+ *      BYTE src: data to add
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void cmp(BYTE dst, BYTE src) {
   WORD buffer = (WORD)dst - (WORD)src;
 
@@ -753,31 +1197,106 @@ void cmp(BYTE dst, BYTE src) {
   test((BYTE)buffer);
 }
 
+/**
+ * Performs an Bitwise Inclusive Or operation with two bytes
+ *
+ * params:
+ *      BYTE *dst: pointer to the byte to store the result in
+ *      BYTE src: data to add
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void bior(BYTE *dst, BYTE src) {
   *dst |= src;
   test(*dst);
 }
 
+/**
+ * Performs an Bitwise And operation with two bytes
+ *
+ * params:
+ *      BYTE *dst: pointer to the byte to store the result in
+ *      BYTE src: data to add
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void band(BYTE *dst, BYTE src) {
   *dst &= src;
   test(*dst);
 }
 
+/**
+ * Performs an Bitwise Exclusive Or operation with two bytes
+ *
+ * params:
+ *      BYTE *dst: pointer to the byte to store the result in
+ *      BYTE src: data to add
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void bxor(BYTE *dst, BYTE src) {
   *dst ^= src;
   test(*dst);
 }
 
+/**
+ * Decrements a memory location/accumulator
+ *
+ * params:
+ *      BYTE *dst: a pointer to a byte to decrement
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void decrement(BYTE *dst) {
   *dst = *dst - 1;
   test(*dst);
 }
 
+/**
+ * Increment a memory location/accumulator
+ *
+ * params:
+ *      BYTE *dst: a pointer to a byte to increment
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void increment(BYTE *dst) {
   *dst = *dst + 1;
   test(*dst);
 }
 
+/**
+ * Rotate right through carry with a byte
+ *
+ * params:
+ *      BYTE *byte: a pointer to a byte to rotate through carry
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void rcrotate(BYTE *byte) {
   BYTE old_carry = fcheck(FLAG_C);
   if (lsbset(*byte) != old_carry) {
@@ -789,6 +1308,18 @@ void rcrotate(BYTE *byte) {
   test(*byte);
 }
 
+/**
+ * Rotate left through carry with a byte
+ *
+ * params:
+ *      BYTE *byte: a pointer to a byte to rotate through carry
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void lcrotate(BYTE *byte) {
   BYTE old_carry = fcheck(FLAG_C);
 
@@ -801,6 +1332,18 @@ void lcrotate(BYTE *byte) {
   test(*byte);
 }
 
+/**
+ * Arithmetic left shift a byte
+ *
+ * params:
+ *      BYTE *byte: a pointer to a byte to shift
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void alshift(BYTE *byte) {
   if (msbset(*byte) != fcheck(FLAG_C)) {
     ftoggle(FLAG_C);
@@ -810,6 +1353,18 @@ void alshift(BYTE *byte) {
   test(*byte);
 }
 
+/**
+ * Arithmetic right shift a byte
+ *
+ * params:
+ *      BYTE *byte: a pointer to a byte to shift
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void arshift(BYTE *byte) {
   BYTE msb = msbset(*byte);
 
@@ -823,6 +1378,18 @@ void arshift(BYTE *byte) {
   test(*byte);
 }
 
+/**
+ * Changes the program counter to the opcode argument if the condition is true
+ *
+ * params:
+ *      bool condition: whether or not to call
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void call(bool condition) {
   WORD address = 0;
   build_address_abs(&address);
@@ -832,10 +1399,47 @@ void call(bool condition) {
   }
 }
 
+/**
+ * Loads a BYTE of data from opcode arguments into a provided location
+ *
+ * params:
+ *      BYTE *byte: pointer to a location to store the data in
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void iload(BYTE *byte) { *byte = fetch(); }
 
+/**
+ * Loads a WORD of data from opcode arguments into a provided location
+ *
+ * params:
+ *      WORD *word: pointer to a location to store the data in
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void iloadw(WORD *word) { *word = ((WORD)fetch()) + ((WORD)fetch() << 8); }
 
+/**
+ * Loads a WORD of data from opcode arguments into a provided location provided
+ * that the data fits the range of an address
+ *
+ * params:
+ *      WORD *word: pointer to a location to store the data in
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void ialoadw(WORD *word) {
   WORD address = ((WORD)fetch()) + ((WORD)fetch() << 8);
   if (is_addressable(address)) {
@@ -843,24 +1447,80 @@ void ialoadw(WORD *word) {
   }
 }
 
+/**
+ * Loads a BYTE of data stored in address into the location provided
+ *
+ * params:
+ *      BYTE *byte: pointer to a location to store the data in
+ *      WORD address: the address to retrieve data from
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void load(BYTE *dst, WORD address) {
   if (is_addressable(address)) {
     *dst = Memory[address];
   }
 }
 
+/**
+ * Stores a BYTE of data in the provided address
+ *
+ * params:
+ *      BYTE *byte: pointer to a location to store the data in
+ *      WORD address: the address to store data in
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void store(BYTE dst, WORD address) {
   if (is_addressable(address)) {
     Memory[address] = dst;
   }
 }
 
+/**
+ * Loads a WORD of data stored in two parts in address and address+1 into the
+ * location provided
+ *
+ * params:
+ *      WORD *word: pointer to a location to store the data in
+ *      WORD address: the address to retrieve data from
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void loadw(WORD *word, WORD address) {
   if (address >= 0 && address <= MEMORY_SIZE - 2) {
     *word = (((WORD)Memory[address + 1]) << 8) + (WORD)Memory[address];
     testw(*word);
   }
 }
+
+/**
+ * Stores a WORD of data stored in a location in two parts in address and
+ * address+1
+ *
+ * params:
+ *      WORD word: the data to store
+ *      WORD address: the address to store the first BYTE in. The location
+ *          that follows will store the remaining BYTE.
+ *
+ * returns:
+ *      none
+ *
+ * warnings:
+ *     none
+ */
 void storew(WORD word, WORD address) {
   if (address >= 0 && address <= MEMORY_SIZE - 2) {
     Memory[address] = (BYTE)word;
