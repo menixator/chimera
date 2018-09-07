@@ -1137,11 +1137,7 @@ void Group_1(BYTE opcode) {
     break;
 
   case JR:
-    build_address_abs(&address);
-    // We are going to push two bytes
-    if (pushw(ProgramCounter)) {
-      ProgramCounter = address;
-    }
+    call(true);
     break;
 
   case RTS:
