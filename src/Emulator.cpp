@@ -24,43 +24,24 @@
 #define MAX_FILENAME_SIZE 500
 #define MAX_BUFFER_SIZE 500
 
-// Picking up where windows falls short
+#if __linux
 
-// Dont scream, windows
 #define SOCKADDR_IN sockaddr_in
-
-// In linux, sockets are referred to using descriptors.
 #define SOCKET int
-
-// *Sighs*
 #define SOCKADDR sockaddr
-
-// Some wonky data types that doesn't exist on linux
 #define WSADATA char *
 #define _TCHAR char
-
-// Socket startup and cleanup functions
-// Why, you ask? Do I look like I know?
 #define WSAStartup(t, y) 0
-#define WSACleanup()                                                           \
-  do {                                                                         \
-  } while (0)
-
-// Because word?
+#define WSACleanup() 0
 #define MAKEWORD
-
-// Oy vey windows.
 #define closesocket(sock) close(sock)
-
-// Seriously? A seperate function, just to pass the address and feel smug
-// about not assigning it? Nice save. thx.
 #define fopen_s(_ptr, path, mode)                                              \
   do {                                                                         \
     *_ptr = fopen(path, mode);                                                 \
   } while (0)
-
-// Doesn't exist on linux
 #define SOCKET_ERROR -1
+
+#endif
 
 SOCKADDR_IN server_addr;
 SOCKADDR_IN client_addr;
@@ -2019,8 +2000,12 @@ void building(int args, _TCHAR **argv) {
 void test_and_mark() {
   char buffer[1024];
   bool testing_complete;
-  // TODO: Remove cast
+
+#if __linux__
   socklen_t len = (socklen_t)sizeof(SOCKADDR);
+#else
+  int len = sizeof(SOCKADDR);
+#endif
   char chr;
   int i;
   int j;
