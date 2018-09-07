@@ -857,9 +857,7 @@ void store(BYTE dst, WORD address) {
 
 void loadw(WORD *word, WORD address) {
   if (address >= 0 && address <= MEMORY_SIZE - 2) {
-    *word = (WORD)Memory[address];
-    *word |= (((WORD)Memory[address + 1]) << 8);
-
+    *word = (((WORD)Memory[address + 1]) << 8) + (WORD)Memory[address];
     testw(*word);
   }
 }
