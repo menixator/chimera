@@ -534,7 +534,8 @@ char opcode_mneumonics[][14] = {
  *      Has a tendency to clobber the
  *      runtime if called an unexpected amount of times.
  *      If an opcode has an argument, always ensure that
- *      fetch is called an appropriate no matter what.
+ *      fetch is called an appropriate number of times
+ *      no matter what.
  */
 BYTE fetch() {
   BYTE byte = 0;
