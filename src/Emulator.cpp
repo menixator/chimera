@@ -891,7 +891,7 @@ void test(BYTE dst) {
  * returns:
  *     none
  */
-void lsright(BYTE *byte) {
+void lrshift(BYTE *byte) {
   if (lsbset(*byte) != fcheck(FLAG_C)) {
     ftoggle(FLAG_C);
   }
@@ -1936,16 +1936,16 @@ void Group_1(BYTE opcode) {
   case LSR:
     build_address_abs(&address);
     if (is_addressable(address)) {
-      lsright(&Memory[address]);
+      lrshift(&Memory[address]);
     }
     break;
 
   case LSRA:
-    lsright(&Registers[REGISTER_A]);
+    lrshift(&Registers[REGISTER_A]);
     break;
 
   case LSRB:
-    lsright(&Registers[REGISTER_B]);
+    lrshift(&Registers[REGISTER_B]);
     break;
 
   case NOT:
