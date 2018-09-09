@@ -515,8 +515,8 @@ char opcode_mneumonics[][14] = {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Define some directives to avoid magic numbers
-#define MSB 0x80
-#define LSB 0x01
+#define MSB_MASK 0x80
+#define LSB_MASK 0x01
 #define BYTE_MAX 0xFF
 #define RSHIFT_MASK 0x7F
 #define LSHIFT_MASK 0xFE
@@ -633,7 +633,7 @@ bool fcheck(int flag) { return (Flags & flag) == flag; }
  * warnings:
  *      none
  */
-bool msbset(BYTE byte) { return (byte & MSB) == MSB; }
+bool msbset(BYTE byte) { return (byte & MSB_MASK) == MSB_MASK; }
 
 /**
  * Checks if the least significant bit was turned on in a byte
@@ -647,7 +647,7 @@ bool msbset(BYTE byte) { return (byte & MSB) == MSB; }
  * warnings:
  *      none
  */
-bool lsbset(BYTE byte) { return (byte & LSB) == LSB; }
+bool lsbset(BYTE byte) { return (byte & LSB_MASK) == LSB_MASK; }
 
 /**
  * builds a 16 bit address for opcodes that use absolute addressing
@@ -1394,7 +1394,7 @@ void call(bool condition) {
   WORD address = 0;
   build_address_abs(&address);
 
-  if (condition && pushw(ProgramCounter) && is_addressable(address)) {
+  if (condition && is_addressable(address) && pushw(ProgramCounter)) {
     ProgramCounter = address;
   }
 }
