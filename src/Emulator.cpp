@@ -190,7 +190,9 @@ char opcode_mneumonics[][14] = {
     "CPIA  #      ", "CPIB  #      ", "ANIA  #      ", "ANIB  #      ",
 
 };
+
 // Op-code directives
+// ------------------
 // Loads data into accumulator A
 #define LDAA_IMM 0x41
 #define LDAA_ABS 0x51
@@ -438,8 +440,7 @@ char opcode_mneumonics[][14] = {
 
 // Decrements the Page Register
 #define DEP 0x47
-
-// Incremnets the Page Registerr
+// Increments the Page Register
 #define INP 0x48
 
 // Various arithmetic and logical operations
