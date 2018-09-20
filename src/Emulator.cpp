@@ -1,3 +1,12 @@
+/*********************************************************************************
+ * Name         : Chimera-2018-C-Emulator                                        *
+ * Author       : Ahmed Miljau(S1700804)                                         *
+ * Date         : 28/08/2018                                                     *
+ * Description  : Emulates the Chimera-2018-C-Emulator                           *
+ * Notes        : Will compile on any linux operating system as well as windows. *
+ * Git Repo     : https://gitlab.com/menixator/chimera.git                       *
+ *********************************************************************************
+ */
 
 #include <arpa/inet.h>
 #include <stdio.h>
