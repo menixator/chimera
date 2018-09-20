@@ -1013,8 +1013,7 @@ void upush(BYTE reg) {
  *      none
  *
  * warnings:
- *      This function does not check if the stack has enough
- *      space for the byte that is being pushed.
+ *      none
  */
 bool push(BYTE reg) {
   if (StackPointer >= 1 && StackPointer < MEMORY_SIZE) {
@@ -1052,7 +1051,7 @@ void upop(BYTE *reg) {
  *      a boolean value reflecting the status of the operation
  *
  * warnings:
- *      This function does not check if the stack has any data
+ *      none
  */
 bool pop(BYTE *reg) {
   if (StackPointer >= 0 && StackPointer < MEMORY_SIZE - 1) {
