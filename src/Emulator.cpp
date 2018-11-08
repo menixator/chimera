@@ -2919,6 +2919,6 @@ int _tmain(int argc, _TCHAR *argv[]) {
   return 0;
 }
 
-#if __linux__ || __APPLE
+#if __linux__ || __APPLE__
 int main(int argc, char *argv[]) { return _tmain(argc, argv); }
 #endif
