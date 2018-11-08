@@ -32,15 +32,16 @@
 #define MAX_FILENAME_SIZE 500
 #define MAX_BUFFER_SIZE 500
 
-#if __linux__
+// These are aliases for Unix based operating systems.
+#if __linux__ || __APPLE__
 #define SOCKADDR_IN sockaddr_in
 #define SOCKET int
 #define SOCKADDR sockaddr
 #define WSADATA char *
 #define _TCHAR char
 #define WSAStartup(t, y) 0
-#define WSACleanup() 0
-#define MAKEWORD
+#define WSACleanup()  do{}while(0)
+#define MAKEWORD do{} while(0)
 #define closesocket(sock) close(sock)
 #define fopen_s(_ptr, path, mode)                                              \
   do {                                                                         \
@@ -2726,7 +2727,7 @@ void test_and_mark() {
   char buffer[1024];
   bool testing_complete;
 
-#if __linux__
+#if __linux__ ||  __APPLE__
   socklen_t len = (socklen_t)sizeof(SOCKADDR);
 #else
   int len = sizeof(SOCKADDR);
@@ -2918,6 +2919,6 @@ int _tmain(int argc, _TCHAR *argv[]) {
   return 0;
 }
 
-#if __linux__
+#if __linux__ || __APPLE
 int main(int argc, char *argv[]) { return _tmain(argc, argv); }
 #endif
